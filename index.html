@@ -26,7 +26,7 @@ table {
 <table class="table-body">
 	<tr>
 		<td>
-			<img id="ph_porzellan_center" src="website_bilder/porzellan/porzellan_1.jpg" alt="porzellan" width="70%">
+			<img id="ph_porzellan_center" src="/website_bilder/porzellan/porzellan_1.jpg" alt="porzellan" width="70%">
 		</td>
 		<td>
 			<p>Jahrtausend alte Mineralien ...</p>
@@ -38,14 +38,14 @@ table {
 			<p>... durch Hände geformt ...</p>
 		</td>
 		<td>
-			<img id="ph_raku_plate" class="videos-hover" src="website_bilder/raku/raku_0.jpg" alt="raku_plate" width="70%">
-			<img id="ph_raku_bowl" src="website_bilder/raku/raku_1.png" alt="raku_bowl" width="0%">
+			<img id="ph_raku_plate" class="videos-hover" src="/website_bilder/raku/raku_0.jpg" alt="raku_plate" width="70%">
+			<img id="ph_raku_bowl" src="/website_bilder/raku/raku_1.png" alt="raku_bowl" width="0%">
 		</td>
 	</tr>
 	
 	<tr id="row_steinzeug">
 		<td>
-			<img id="img_steinzeug" src="website_bilder/steinzeug/small/steinzeug_1.png" alt="steinzeug" width="40%" style="position: fixed;">
+			<img id="img_steinzeug" src="/website_bilder/steinzeug/small/steinzeug_1.png" alt="steinzeug" width="40%" style="position: fixed;">
 		</td>
 		<td>
 			<p>... durch Feuer gefestigt ...</p>
@@ -57,7 +57,7 @@ table {
 			<p>... Angela Börnicke ...</p>
 		</td>
 		<td>
-			<img src="website_bilder/steinzeug/steinzeug_1.png" width="40%">
+			<img src="/website_bilder/steinzeug/steinzeug_1.png" width="40%">
 		</td>
 	</tr>
 </table>
@@ -97,7 +97,7 @@ function rotate_porzellan(scroll) {
 		opacity = easeInOut(img_position_center, last_frame, first_frame, 0, 1);
 	}
 	
-	var path = "website_bilder/porzellan/porzellan_";
+	var path = "/website_bilder/porzellan/porzellan_";
 	var index = img_steinzeug_index[element].toString();
 	var type = ".jpg";
 	var path = path.concat(index, type);
