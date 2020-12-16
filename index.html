@@ -1,6 +1,53 @@
 <html style="zoom: 150%;">
 
+
+<head>
+	<title>Corona Stats</title>
+	<script src="Chart.bundle.js"> </script>
+</head>
+
 <style>
+	body {
+	  font-family: Arial;
+	}
+
+	.overlay {
+	  height: 100%;
+	  width: 0;
+	  position: fixed; /* Stay in place */
+	  z-index: 1; /* Sit on top */
+	  left: 0;
+	  top: 0;
+	  background-color: rgb(0,0,0); /* Black fallback color */
+	  background-color: rgba(0,0,0, 0.95); /* Black w/opacity */
+	  overflow-x: hidden; /* Disable horizontal scroll */
+	  transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+	}
+
+	div.hide {
+		background: #DDDDDD;
+		border-radius: 0.5em;
+		display: inline-block;
+  		padding: 0.5em;
+    	margin: 20px;
+    	float: right;
+	}
+
+	input {
+	  border: 1px solid transparent;
+	  background-color: #f1f1f1;
+	  padding: 10px;
+	  font-size: 16px;
+	}
+
+	button.add {
+	  border: 1px solid transparent;
+	  padding: 10px;
+	  font-size: 16px;
+	  background-color: DodgerBlue;
+	  color: #fff;
+	  cursor: pointer;
+	}
 
 	div.country {
 		background: #DDDDDD;
@@ -9,18 +56,25 @@
   		padding: 0.3em;
     	margin: 5px;
 	}
+
+	.number {
+		text-align: right;
+	}
+	
 </style>
 
-<head>
-	<title>Corona Stats</title>
-</head>
-
 <body>
+	<div id="details" class="overlay">
+  		<div onclick="hideDetails()" class="hide">×</div>
+
+  		<canvas id="dailyCases" width="40%" height="20%"></canvas>
+
+	</div>
 
 	<div class="autocomplete" style="width:300px;">
-		<input id="filterInput" onChange="addFilter()" list="filterOptions" />
+		<input id="filterInput" onChange="addFilter()" style="border-radius: 0.3em;" list="filterOptions" placeholder="Country" />
 		<datalist id="filterOptions"></datalist>
-  		<button class="add" onclick="addFilter()">Add</button>
+  		<button class="add" onclick="addFilter()" style="border-radius: 0.3em;">Add</button>
 	</div>
 
 	<div id="countryFilter" style="margin-top: 10px;">	</div>
@@ -30,10 +84,10 @@
 			<thead style="text-align: left">
 				<tr>
 					<th>Country</th>
-					<th>Total Cases</th>
-					<th>New Cases</th>
-					<th>Total Deaths</th>
-					<th>New Deaths</th>
+					<th style="text-align: right;">Total Cases</th>
+					<th style="text-align: right;">New Cases</th>
+					<th style="text-align: right;">Total Deaths</th>
+					<th style="text-align: right;">New Deaths</th>
 				</tr>
 			</thead>
 			<tbody id="summary_content">
@@ -45,19 +99,50 @@
 
 <script>
 	var filter_countries = ["United States of America", "Germany", "France", "Korea (South)"];
-	var countries = [];
 
-	updateFilter();
-	loadCountries();
+	var allCountries = [];
+	var countrySlugs = {};
+	var dataDetails = {};
+
+	var request = new XMLHttpRequest();
+	var dataSummary;
+	request.open('GET', 'https://api.covid19api.com/summary', true);
+
+	request.onload = function () {
+		dataSummary = this.response;
+		loadCountries();
+		updateFilter();
+	}
+	
+	request.send();
+
+
+	function loadCountries() {
+		var allCountryData = JSON.parse(dataSummary).Countries;
+
+		for(var i = 0; i < allCountryData.length; i++) {
+		    var obj = allCountryData[i];
+		    allCountries.push(obj["Country"]);
+		    countrySlugs[obj["Country"]] = obj["Slug"];
+		}
+
+		var list = document.getElementById('filterOptions');
+		allCountries.forEach(function(item){
+		   var option = document.createElement('option');
+		   option.value = item;
+		   list.appendChild(option);
+		});
+	}
 
 	function addFilter(){
 		var input = document.getElementById('filterInput').value;
 
-		if(!countries.includes(input)) return;
+		document.getElementById('filterInput').value = '';
+		if(!allCountries.includes(input)) return;
 		if(filter_countries.includes(input)) return;
 
+		loadDetails(input);
 		filter_countries.push(input); 
-		document.getElementById('filterInput').value = '';
 		updateFilter();
 	}
 
@@ -69,52 +154,56 @@
 
 			div.id = item;
 			div.className = 'country';
-			div.innerHTML = item;
+			div.innerHTML = item + " ×";
 			div.addEventListener("click", function(){
 				filter_countries.splice(index, 1);
 				updateFilter();
 			});
 
 			document.getElementById('countryFilter').appendChild(div);
+
+			loadDetails(item);
 		})
 
 		loadSummary();
 	}
 
 	function loadSummary() {
-		var request = new XMLHttpRequest();
-		request.open('GET', 'https://api.covid19api.com/summary', true);
+		var data = JSON.parse(dataSummary);
+		var countries = data.Countries;
+		
+		var table = document.getElementById("summary_content");
+		table.innerHTML = '';
 
-		request.onload = function () {
-			var data = JSON.parse(this.response);
-			var countries = data.Countries;
-			
-			var table = document.getElementById("summary_content");
-			table.innerHTML = '';
+		for(var i = 0; i < countries.length; i++) {
+		    var obj = countries[i];
 
-			for(var i = 0; i < countries.length; i++) {
-			    var obj = countries[i];
+			if(!filter_countries.includes(obj["Country"])) continue;
 
-				if(!filter_countries.includes(obj["Country"])) continue;
+			var row = table.insertRow(-1);
 
-				var row = table.insertRow(-1);
+			var country = row.insertCell(0);
+			country.innerHTML = obj["Country"];
+			country.id = obj["Slug"];
+			country.addEventListener("click", function(){ showDetails(this.id) });
 
-				var country = row.insertCell(0);
-				country.innerHTML = obj["Country"];
-				var totalCases = row.insertCell(1);
-				totalCases.innerHTML = obj["TotalConfirmed"];
-				var newCases = row.insertCell(2);
-				newCases.innerHTML = obj["NewConfirmed"];
-				var totalDeaths = row.insertCell(3);
-				totalDeaths.innerHTML = obj["TotalDeaths"];
-				var newDeaths = row.insertCell(4);
-				newDeaths.innerHTML = obj["NewDeaths"];
+			var totalCases = row.insertCell(1);
+			totalCases.className = "number";
+			totalCases.innerHTML = obj["TotalConfirmed"];
 
-			}
+			var newCases = row.insertCell(2);
+			newCases.className = "number";
+			newCases.innerHTML = obj["NewConfirmed"];
+
+			var totalDeaths = row.insertCell(3);
+			totalDeaths.className = "number";
+			totalDeaths.innerHTML = obj["TotalDeaths"];
+
+			var newDeaths = row.insertCell(4);
+			newDeaths.className = "number";
+			newDeaths.innerHTML = obj["NewDeaths"];
 
 		}
-
-		request.send();
 		sortTable(document.getElementById("summary_content"), 1);
 	}
 
@@ -141,29 +230,81 @@
 		}
 	}
 
-	function loadCountries() {
+	function loadDetails(country){
+		if (country in dataDetails) return;
+
 		var request = new XMLHttpRequest();
-		request.open('GET', 'https://api.covid19api.com/summary', true);
+		var response;
+		request.open('GET', 'https://api.covid19api.com/total/dayone/country/' + countrySlugs[country], true);
 
 		request.onload = function () {
-			var data = JSON.parse(this.response);
-			var dataCountries = data.Countries;
-			for(var i = 0; i < dataCountries.length; i++) {
-			    var obj = dataCountries[i];
-			    countries.push(obj["Country"]);
-			}
-
-			var list = document.getElementById('filterOptions');
-			countries.forEach(function(item){
-			   var option = document.createElement('option');
-			   option.value = item;
-			   list.appendChild(option);
-			});
+			dataDetails[countrySlugs[country]] = this.response;
 		}
-
+		
 		request.send();
 	}
 
+	function showDetails(country){
+		var ctx = document.getElementById('dailyCases');
+		var newCases = getDailyCases(country);
+		var myLineChart = new Chart(ctx, {
+		    type: 'line',
+		    data: {
+			    datasets: [{
+					label: 'New Cases',
+					data: newCases,
+					borderColor: [
+						'rgba(255,99,132,1)',
+						'rgba(54, 162, 235, 1)',
+						'rgba(255, 206, 86, 1)',
+						'rgba(75, 192, 192, 1)',
+						'rgba(153, 102, 255, 1)',
+						'rgba(255, 159, 64, 1)'
+					],
+		      		borderWidth: 1
+				}]
+			},
+			options: {
+				scales: {
+					yAxes: [{
+			            ticks: {
+			                beginAtZero: true
+			            }
+					}],
+					xAxes: [{
+						type: 'time',
+		                time: {
+		                    displayFormats: {
+		                        month: 'YY-MM'
+		                    }
+		                }
+					}]
+				}
+			}
+		});
+
+	  	document.getElementById("details").style.width = "100%";
+	}
+
+	function getDailyCases(country){
+		var dailyCases = [];
+		var countryData = JSON.parse(dataDetails[country]);
+
+		for(var i = 0; i < countryData.length; i++) {
+			var day = countryData[i];
+
+		    var dayData = {
+		    	t : new Date(day["Date"]),
+		    	y : day["Active"]
+		    }
+		    dailyCases.push(dayData);
+		}
+		return dailyCases;
+	}
+
+	function hideDetails() {
+	  document.getElementById("details").style.width = "0%";
+	}
 </script>
 
 </html>
