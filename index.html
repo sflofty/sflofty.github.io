@@ -63,12 +63,34 @@
 	.number {
 		text-align: right;
 	}
+
+	.number14 {
+		font-size: medium;
+		color: white;
+		text-align: right;
+	}
 	
 </style>
 
 <body>
 	<div id="details" class="overlay">
   		<div onclick="hideDetails()" class="hide">×</div>
+  		<div style="color: #0000ff">
+			<table width="100%">
+				<thead style="text-align: left">
+					<tr style="color: white">
+						<th>Date</th>
+						<th style="text-align: right;">Total Cases</th>
+						<th style="text-align: right;">New Cases</th>
+						<th style="text-align: right;">± 7 d</th>
+						<th style="text-align: right;">7 d incidence per 100k</th>
+						<th style="text-align: right;">Total Deaths</th>
+						<th style="text-align: right;">New Deaths</th>
+					</tr>
+				</thead>
+				<tbody id="last14days"></tbody>
+			</table>
+		</div>
   		<div id="activeCasesDiv" width="40%" height="20%"></div>
 	</div>
 
@@ -85,8 +107,9 @@
 			<thead style="text-align: left">
 				<tr>
 					<th>Country</th>
-					<th style="text-align: right;">Total Cases</th>
-					<th style="text-align: right;">New Cases</th>
+					<th style="text-align: right;">Active</th>
+					<th style="text-align: right;">Total</th>
+					<th style="text-align: right;">New</th>
 					<th style="text-align: right;">Total Deaths</th>
 					<th style="text-align: right;">New Deaths</th>
 				</tr>
@@ -99,19 +122,19 @@
 </body>
 
 <script>
-	var filter_countries = ["United States of America", "Germany", "France", "Korea (South)"];
+	var filter_countries = ["USA", "Germany", "France", "S. Korea"];
 
+	var allData = [];
 	var allCountries = [];
-	var countrySlugs = {};
-	var dataDetails = {};
+	var countryData = {};
 
 	var request = new XMLHttpRequest();
-	var dataSummary;
-	request.open('GET', 'https://api.covid19api.com/summary', true);
+	request.open('GET', 'https://corona-api.com/countries?include=timeline', true);
 
 	request.onload = function () {
-		dataSummary = this.response;
+		allData = JSON.parse(this.response).data;
 		loadCountries();
+		console.log(countryData);
 		updateFilter();
 	}
 	
@@ -119,32 +142,17 @@
 
 
 	function loadCountries() {
-		var allCountryData = JSON.parse(dataSummary).Countries;
-
-		for(var i = 0; i < allCountryData.length; i++) {
-		    var obj = allCountryData[i];
-		    allCountries.push(obj["Country"]);
-		    countrySlugs[obj["Country"]] = obj["Slug"];
-		}
-
 		var list = document.getElementById('filterOptions');
-		allCountries.forEach(function(item){
-		   var option = document.createElement('option');
-		   option.value = item;
-		   list.appendChild(option);
-		});
-	}
 
-	function addFilter(){
-		var input = document.getElementById('filterInput').value;
+		for(var i = 0; i < allData.length; i++) {
+		    var name = allData[i].name;
+		    allCountries.push(name);
+			countryData[name] = allData[i];
 
-		document.getElementById('filterInput').value = '';
-		if(!allCountries.includes(input)) return;
-		if(filter_countries.includes(input)) return;
-
-		loadDetails(input);
-		filter_countries.push(input); 
-		updateFilter();
+			var option = document.createElement('option');
+			option.value = name;
+			list.appendChild(option);
+		}
 	}
 
 	function updateFilter(){
@@ -162,50 +170,62 @@
 			});
 
 			document.getElementById('countryFilter').appendChild(div);
-
-			loadDetails(item);
 		})
 
 		loadSummary();
 	}
 
 	function loadSummary() {
-		var data = JSON.parse(dataSummary);
-		var countries = data.Countries;
-		
 		var table = document.getElementById("summary_content");
 		table.innerHTML = '';
 
-		for(var i = 0; i < countries.length; i++) {
-		    var obj = countries[i];
+		Object.keys(countryData).forEach(function(key) {
+			if (!filter_countries.includes(key)) return;
 
-			if(!filter_countries.includes(obj["Country"])) continue;
+			var data = countryData[key];
+			var total = data["latest_data"];
+			var timeline = data["timeline"];
 
 			var row = table.insertRow(-1);
 
 			var country = row.insertCell(0);
-			country.innerHTML = obj["Country"];
-			country.id = obj["Slug"];
+			country.innerHTML = key;
+			country.id = key;
 			country.addEventListener("click", function(){ showDetails(this.id) });
 
-			var totalCases = row.insertCell(1);
-			totalCases.className = "number";
-			totalCases.innerHTML = obj["TotalConfirmed"];
+			var active = row.insertCell(1);
+			active.className = "number";
+			active.innerHTML = timeline[1]["active"];
 
-			var newCases = row.insertCell(2);
+			var cases = row.insertCell(2);
+			cases.className = "number";
+			cases.innerHTML = total["confirmed"];
+
+			var newCases = row.insertCell(3);
 			newCases.className = "number";
-			newCases.innerHTML = obj["NewConfirmed"];
+			newCases.innerHTML = timeline[1]["new_confirmed"];
 
-			var totalDeaths = row.insertCell(3);
+			var totalDeaths = row.insertCell(4);
 			totalDeaths.className = "number";
-			totalDeaths.innerHTML = obj["TotalDeaths"];
+			totalDeaths.innerHTML = total["deaths"];
 
-			var newDeaths = row.insertCell(4);
+			var newDeaths = row.insertCell(5);
 			newDeaths.className = "number";
-			newDeaths.innerHTML = obj["NewDeaths"];
+			newDeaths.innerHTML = timeline[1]["new_deaths"];
+		})
 
-		}
 		sortTable(document.getElementById("summary_content"), 1);
+	}
+
+	function addFilter(){
+		var input = document.getElementById('filterInput').value;
+
+		document.getElementById('filterInput').value = '';
+		if(!allCountries.includes(input)) return;
+		if(filter_countries.includes(input)) return;
+
+		filter_countries.push(input); 
+		updateFilter();
 	}
 
 	function sortTable(table, column) {
@@ -231,23 +251,9 @@
 		}
 	}
 
-	function loadDetails(country){
-		if (country in dataDetails) return;
-
-		var request = new XMLHttpRequest();
-		request.timeout = 10000;
-
-		var response;
-		request.open('GET', 'https://api.covid19api.com/dayone/country/' + countrySlugs[country], true);
-
-		request.onload = function () {
-			dataDetails[countrySlugs[country]] = this.response;
-		}
-		
-		request.send();
-	}
-
 	function showDetails(country){
+		load14Days(country);
+
 		var activeCasesDiv = document.getElementById('activeCasesDiv');
 		activeCasesDiv.innerHTML = '';
 		var activeCasesData = getDailyCases(country);
@@ -316,18 +322,68 @@
 	  	document.getElementById("details").style.width = "100%";
 	}
 
+	function load14Days(country) {
+		var data = countryData[country];
+		var timeline = data["timeline"];
+		
+		var table = document.getElementById("last14days");
+		table.innerHTML = '';
+
+		var length = timeline.length;
+		length = Math.min(length, 12);
+		
+		var dateOptions = { year: '2-digit', month: '2-digit', day: '2-digit' };
+
+		for(var i = 0; i < length; i++) {
+		    var day = timeline[i];
+			var row = table.insertRow(-1);
+
+			var date = row.insertCell(0);
+			date.className = "number14";
+			var dateText = new Date(day["updated_at"]);
+			date.innerHTML = dateText.toLocaleDateString('de-DE', dateOptions);
+
+			var totalCases = row.insertCell(1);
+			totalCases.className = "number14";
+			totalCases.innerHTML = day["confirmed"];
+
+			var newCases = row.insertCell(2);
+			newCases.className = "number14";
+			newCases.innerHTML = day["new_confirmed"];
+
+			var sevenDays = row.insertCell(3);
+			sevenDays.className = "number14";
+			sevenDays.innerHTML = day["new_confirmed"] - timeline[i+7]["new_confirmed"];
+
+			var incidence = row.insertCell(4);
+			incidence.className = "number14";
+			incidence.innerHTML = day["new_deaths"];
+
+			var totalDeaths = row.insertCell(5);
+			totalDeaths.className = "number14";
+			totalDeaths.innerHTML = day["deaths"];
+
+			var newDeaths = row.insertCell(6);
+			newDeaths.className = "number14";
+			newDeaths.innerHTML = day["new_deaths"];
+
+		}
+		sortTable(document.getElementById("summary_content"), 1);
+	}
+
 	function getDailyCases(country){
 		var dailyCases = [];
-		var countryData = JSON.parse(dataDetails[country]);
+		var data = countryData[country]["timeline"];
 
-		for(var i = 0; i < countryData.length; i++) {
-			var day = countryData[i];
+		for(var i = 0; i < data.length; i++) {
+			var day = data[i];
 
 		    var dayData = {
-		    	t : new Date(day["Date"]),
-		    	y : day["Active"]
+		    	t : new Date(day["updated_at"]),
+		    	y : day["active"]
 		    }
 		    dailyCases.push(dayData);
+
 		}
 		return dailyCases;
 	}
