@@ -4,6 +4,9 @@
 <head>
 	<title>Corona Stats</title>
 	<script src="Chart.bundle.js"> </script>
+	<script src="https://cdn.jsdelivr.net/npm/hammerjs"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
+
 </head>
 
 <style>
@@ -66,9 +69,7 @@
 <body>
 	<div id="details" class="overlay">
   		<div onclick="hideDetails()" class="hide">×</div>
-
-  		<canvas id="dailyCases" width="40%" height="20%"></canvas>
-
+  		<div id="activeCasesDiv" width="40%" height="20%"></div>
 	</div>
 
 	<div class="autocomplete" style="width:300px;">
@@ -234,8 +235,10 @@
 		if (country in dataDetails) return;
 
 		var request = new XMLHttpRequest();
+		request.timeout = 10000;
+
 		var response;
-		request.open('GET', 'https://api.covid19api.com/total/dayone/country/' + countrySlugs[country], true);
+		request.open('GET', 'https://api.covid19api.com/dayone/country/' + countrySlugs[country], true);
 
 		request.onload = function () {
 			dataDetails[countrySlugs[country]] = this.response;
@@ -245,43 +248,70 @@
 	}
 
 	function showDetails(country){
-		var ctx = document.getElementById('dailyCases');
-		var newCases = getDailyCases(country);
-		var myLineChart = new Chart(ctx, {
-		    type: 'line',
-		    data: {
-			    datasets: [{
-					label: 'New Cases',
-					data: newCases,
-					borderColor: [
-						'rgba(255,99,132,1)',
-						'rgba(54, 162, 235, 1)',
-						'rgba(255, 206, 86, 1)',
-						'rgba(75, 192, 192, 1)',
-						'rgba(153, 102, 255, 1)',
-						'rgba(255, 159, 64, 1)'
-					],
-		      		borderWidth: 1
-				}]
-			},
-			options: {
-				scales: {
-					yAxes: [{
-			            ticks: {
-			                beginAtZero: true
-			            }
-					}],
-					xAxes: [{
-						type: 'time',
-		                time: {
-		                    displayFormats: {
-		                        month: 'YY-MM'
-		                    }
-		                }
-					}]
+		var activeCasesDiv = document.getElementById('activeCasesDiv');
+		activeCasesDiv.innerHTML = '';
+		var activeCasesData = getDailyCases(country);
+		var minX = activeCasesData[0].t;
+		var maxX = activeCasesData[activeCasesData.length-1].t;
+
+		var canvas = document.createElement("canvas");
+		var myChart = new Chart(canvas, {
+		  type: 'line',
+		  data: {
+		    datasets: [{
+		      label: 'Active',
+		      borderColor: '#1d90c2',
+		      borderWidth: 2,
+		      pointRadius: 0,
+		      fill: 'false',
+		      data: activeCasesData
+		    }]
+		  },
+		  options: {
+		  	responsive: true,
+			plugins: {
+				zoom: {
+					pan: {
+						enabled: true,
+						mode: 'x',
+						rangeMin: {
+							x: minX
+						},
+						rangeMax: {
+							x: maxX
+						},
+					},
+					zoom: {
+						enabled: true,
+						mode: 'x',
+						rangeMin: {
+							x: minX
+						},
+						rangeMax: {
+							x: maxX
+						},
+					}
 				}
+			},
+		    scales: {
+				yAxes: [{
+		            ticks: {
+		                beginAtZero: true
+		            }
+				}],
+				xAxes: [{
+					type: 'time',
+	                time: {
+	                    displayFormats: {
+	                        month: 'YY-MM'
+	                    }
+	                }
+				}]
 			}
+		  }
 		});
+
+		activeCasesDiv.appendChild(canvas);
 
 	  	document.getElementById("details").style.width = "100%";
 	}
