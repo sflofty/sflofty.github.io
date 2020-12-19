@@ -73,6 +73,19 @@
 </style>
 
 <body>
+  	<button class="add" onclick="downloadData()" style="border-radius: 0.3em;">Download</button>
+	<script>
+
+	function downloadData(){
+	  var link = document.createElement("a");
+	  link.href = "https://covid.ourworldindata.org/data/owid-covid-data.csv";
+	  document.body.appendChild(link);
+	  link.click();
+	  document.body.removeChild(link);
+	  delete link;
+	}
+	</script>
+
 	<div id="details" class="overlay">
   		<div onclick="hideDetails()" class="hide">×</div>
   		<div style="color: #0000ff">
