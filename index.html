@@ -1,409 +1,225 @@
-<html style="zoom: 150%;">
-
-
-<head>
-	<title>Corona Stats</title>
-	<script src="Chart.bundle.js"> </script>
-	<script src="https://cdn.jsdelivr.net/npm/hammerjs"></script>
-	<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
-
-</head>
-
-<style>
-	body {
-	  font-family: Arial;
-	}
-
-	.overlay {
-	  height: 100%;
-	  width: 0;
-	  position: fixed; /* Stay in place */
-	  z-index: 1; /* Sit on top */
-	  left: 0;
-	  top: 0;
-	  background-color: rgb(0,0,0); /* Black fallback color */
-	  background-color: rgba(0,0,0, 0.95); /* Black w/opacity */
-	  overflow-x: hidden; /* Disable horizontal scroll */
-	  transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
-	}
-
-	div.hide {
-		background: #DDDDDD;
-		border-radius: 0.5em;
-		display: inline-block;
-  		padding: 0.5em;
-    	margin: 20px;
-    	float: right;
-	}
-
-	input {
-	  border: 1px solid transparent;
-	  background-color: #f1f1f1;
-	  padding: 10px;
-	  font-size: 16px;
-	}
-
-	button.add {
-	  border: 1px solid transparent;
-	  padding: 10px;
-	  font-size: 16px;
-	  background-color: DodgerBlue;
-	  color: #fff;
-	  cursor: pointer;
-	}
-
-	div.country {
-		background: #DDDDDD;
-		border-radius: 0.3em;
-		display: inline-block;
-  		padding: 0.3em;
-    	margin: 5px;
-	}
-
-	.number {
-		text-align: right;
-	}
-
-	.number14 {
-		font-size: medium;
-		color: white;
-		text-align: right;
-	}
-	
-</style>
-
-<body>
-  	<button class="add" onclick="downloadData()" style="border-radius: 0.3em;">Download</button>
-	<script>
-
-	function downloadData(){
-	  var link = document.createElement("a");
-	  link.href = "https://covid.ourworldindata.org/data/owid-covid-data.csv";
-	  document.body.appendChild(link);
-	  link.click();
-	  document.body.removeChild(link);
-	  delete link;
-	}
-	</script>
-
-	<div id="details" class="overlay">
-  		<div onclick="hideDetails()" class="hide">×</div>
-  		<div style="color: #0000ff">
-			<table width="100%">
-				<thead style="text-align: left">
-					<tr style="color: white">
-						<th>Date</th>
-						<th style="text-align: right;">Total Cases</th>
-						<th style="text-align: right;">New Cases</th>
-						<th style="text-align: right;">± 7 d</th>
-						<th style="text-align: right;">7 d incidence per 100k</th>
-						<th style="text-align: right;">Total Deaths</th>
-						<th style="text-align: right;">New Deaths</th>
-					</tr>
-				</thead>
-				<tbody id="last14days"></tbody>
-			</table>
-		</div>
-  		<div id="activeCasesDiv" width="40%" height="20%"></div>
-	</div>
-
-	<div class="autocomplete" style="width:300px;">
-		<input id="filterInput" onChange="addFilter()" style="border-radius: 0.3em;" list="filterOptions" placeholder="Country" />
-		<datalist id="filterOptions"></datalist>
-  		<button class="add" onclick="addFilter()" style="border-radius: 0.3em;">Add</button>
-	</div>
-
-	<div id="countryFilter" style="margin-top: 10px;">	</div>
-
-	<div style="margin-top: 10px;">
-		<table class="sortable" id="table_summary" width="100%">
-			<thead style="text-align: left">
-				<tr>
-					<th>Country</th>
-					<th style="text-align: right;">Active</th>
-					<th style="text-align: right;">Total</th>
-					<th style="text-align: right;">New</th>
-					<th style="text-align: right;">Total Deaths</th>
-					<th style="text-align: right;">New Deaths</th>
-				</tr>
-			</thead>
-			<tbody id="summary_content">
-			</tbody>
-		</table>
-	</div>
-
-</body>
-
-<script>
-	var filter_countries = ["USA", "Germany", "France", "S. Korea"];
-
-	var allData = [];
-	var allCountries = [];
-	var countryData = {};
-
+function loadCountries() {
 	var request = new XMLHttpRequest();
-	request.open('GET', 'https://corona-api.com/countries?include=timeline', true);
+	request.open('GET', 'https://api.covid19api.com/summary');
 
 	request.onload = function () {
-		allData = JSON.parse(this.response).data;
-		loadCountries();
-		console.log(countryData);
+		var data = JSON.parse(this.response).Countries;
+
+		var sorted = [];
+		for(var i = 0; i < data.length; i++) {
+		    var country = data[i];
+		    countryToSlug[country.Country] = country.Slug;
+		    sorted.push(country.Country);
+		}
+
+		sorted.sort();
+		var dataList = document.getElementById('filterOptions');
+		sorted.forEach(function(item, index){
+			var option = document.createElement('option');
+			option.id = item;
+			option.value = item;
+		    dataList.appendChild(option);
+		});
+
 		updateFilter();
 	}
-	
 	request.send();
+};
 
+function updateFilter(){
+	document.getElementById('countryFilter').innerHTML = '';
 
-	function loadCountries() {
-		var list = document.getElementById('filterOptions');
+	filter_countries.sort();
 
-		for(var i = 0; i < allData.length; i++) {
-		    var name = allData[i].name;
-		    allCountries.push(name);
-			countryData[name] = allData[i];
+	filter_countries.forEach(function(item, index){
+		//download data
+		if(!(item in countryData)) downloadCountry(item);
 
-			var option = document.createElement('option');
-			option.value = name;
-			list.appendChild(option);
-		}
-	}
+		//create filter indicator
+		var div = document.createElement("div");
 
-	function updateFilter(){
-		document.getElementById('countryFilter').innerHTML = '';
+		div.id = item;
+		div.className = 'country';
+		div.innerHTML = item + " ×";
+		div.addEventListener("click", function(){
+			filter_countries.splice(index, 1);
+			updateFilter();
+		});
 
-		filter_countries.forEach(function(item, index){
-			var div = document.createElement("div");
+		document.getElementById('countryFilter').appendChild(div);
+	})
 
-			div.id = item;
-			div.className = 'country';
-			div.innerHTML = item + " ×";
-			div.addEventListener("click", function(){
-				filter_countries.splice(index, 1);
-				updateFilter();
-			});
+	loadSummary();
+}
 
-			document.getElementById('countryFilter').appendChild(div);
-		})
+function addFilter(){
+	var input = document.getElementById('filterInput').value;
+	document.getElementById('filterInput').value = '';
+
+	if(!(input in countryToSlug)) return;
+	if(filter_countries.includes(input)) return;
+
+	filter_countries.push(input); 
+	updateFilter();
+}
+
+function downloadCountry(country){
+	var url = "https://api.covid19api.com/total/country/" + countryToSlug[country];
+
+	var request = new XMLHttpRequest();
+	request.open('GET', url);
+
+	var preConfirmed = 0;
+	var preDeaths = 0;
+	var preRecovered = 0;
+
+	request.onload = function () {
+		var data = JSON.parse(this.response);
+
+		countryData[country] = {};
+		countryData[country]["history"] = {};
+
+		data.forEach(function (item, index){
+			item["New Confirmed"] = item.Confirmed - preConfirmed;
+			item["New Deaths"] = item.Deaths - preDeaths;
+			item["New Recovered"] = item.Recovered - preRecovered;
+
+			preConfirmed = item.Confirmed;
+			preDeaths = item.Deaths;
+			preRecovered = item.Recovered;
+
+			var date = item.Date.slice(0,10);
+			var date7DaysAgo = new Date(new Date(item.Date) - (7 * 24 * 60 * 60 * 1000)).toISOString().slice(0,10);
+
+			if(index > 6) item["± 7d Cases"] = item["New Confirmed"] - countryData[country]["history"][date7DaysAgo]["New Confirmed"];
+
+			delete item["Lat"];
+			delete item["Lon"];
+			delete item["City"];
+			delete item["CityCode"];
+			delete item["CountryCode"];
+			delete item["Province"];
+			delete item["Country"];
+			delete item["Date"];
+
+			countryData[country]["history"][date] = item;
+
+			if(index + 1 == data.length) countryData[country]["summary"] = item;
+		});
 
 		loadSummary();
 	}
 
-	function loadSummary() {
-		var table = document.getElementById("summary_content");
-		table.innerHTML = '';
+	console.log(countryData)
+	request.send();
+}
 
-		Object.keys(countryData).forEach(function(key) {
-			if (!filter_countries.includes(key)) return;
+function loadHeader(){
+	var header = document.getElementById("header");
 
-			var data = countryData[key];
-			var total = data["latest_data"];
-			var timeline = data["timeline"];
+	//insert header from filter
+	filter_fields.forEach(function(item){
+		var cell = document.createElement("th");
+		cell.className = "number";
+		cell.innerHTML = item;
+		header.appendChild(cell);
+	});
+			
+}
 
-			var row = table.insertRow(-1);
+function loadSummary() {
+	var table = document.getElementById("summary_content");
+	table.innerHTML = '';
 
-			var country = row.insertCell(0);
-			country.innerHTML = key;
-			country.id = key;
-			country.addEventListener("click", function(){ showDetails(this.id) });
+	Object.keys(countryData).forEach(function(key) {
+		if (!filter_countries.includes(key)) return;
 
-			var active = row.insertCell(1);
-			active.className = "number";
-			active.innerHTML = timeline[1]["active"];
+		//insert row for key = country
+		var row = table.insertRow(-1);
+		row.innerHTML = key;
+		row.id = key;
+		row.addEventListener("click", function(){ showDetails(this.id) });
 
-			var cases = row.insertCell(2);
-			cases.className = "number";
-			cases.innerHTML = total["confirmed"];
-
-			var newCases = row.insertCell(3);
-			newCases.className = "number";
-			newCases.innerHTML = timeline[1]["new_confirmed"];
-
-			var totalDeaths = row.insertCell(4);
-			totalDeaths.className = "number";
-			totalDeaths.innerHTML = total["deaths"];
-
-			var newDeaths = row.insertCell(5);
-			newDeaths.className = "number";
-			newDeaths.innerHTML = timeline[1]["new_deaths"];
-		})
-
-		sortTable(document.getElementById("summary_content"), 1);
-	}
-
-	function addFilter(){
-		var input = document.getElementById('filterInput').value;
-
-		document.getElementById('filterInput').value = '';
-		if(!allCountries.includes(input)) return;
-		if(filter_countries.includes(input)) return;
-
-		filter_countries.push(input); 
-		updateFilter();
-	}
-
-	function sortTable(table, column) {
-		var x, y, shouldSwitch;
-		var switching = true;
-		while (switching) {
-			switching = false;
-			var rows = table.rows;
-			for (var i = 1; i < (rows.length - 1); i++) {
-			  shouldSwitch = false;
-			  x = rows[i].getElementsByTagName("TD")[column];
-			  y = rows[i + 1].getElementsByTagName("TD")[column];
-
-			  if (parseInt(x.innerHTML) < parseInt(y.innerHTML)) {
-			    shouldSwitch = true;
-			    break;
-			  }
-			}
-			if (shouldSwitch) {
-			  rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-			  switching = true;
-			}
-		}
-	}
-
-	function showDetails(country){
-		load14Days(country);
-
-		var activeCasesDiv = document.getElementById('activeCasesDiv');
-		activeCasesDiv.innerHTML = '';
-		var activeCasesData = getDailyCases(country);
-		var minX = activeCasesData[0].t;
-		var maxX = activeCasesData[activeCasesData.length-1].t;
-
-		var canvas = document.createElement("canvas");
-		var myChart = new Chart(canvas, {
-		  type: 'line',
-		  data: {
-		    datasets: [{
-		      label: 'Active',
-		      borderColor: '#1d90c2',
-		      borderWidth: 2,
-		      pointRadius: 0,
-		      fill: 'false',
-		      data: activeCasesData
-		    }]
-		  },
-		  options: {
-		  	responsive: true,
-			plugins: {
-				zoom: {
-					pan: {
-						enabled: true,
-						mode: 'x',
-						rangeMin: {
-							x: minX
-						},
-						rangeMax: {
-							x: maxX
-						},
-					},
-					zoom: {
-						enabled: true,
-						mode: 'x',
-						rangeMin: {
-							x: minX
-						},
-						rangeMax: {
-							x: maxX
-						},
-					}
-				}
-			},
-		    scales: {
-				yAxes: [{
-		            ticks: {
-		                beginAtZero: true
-		            }
-				}],
-				xAxes: [{
-					type: 'time',
-	                time: {
-	                    displayFormats: {
-	                        month: 'YY-MM'
-	                    }
-	                }
-				}]
-			}
-		  }
+		//insert columns from filter
+		filter_fields.forEach(function(item){
+			var column = row.insertCell(-1);
+			column.className = "number";
+			column.innerHTML = countryData[key]["summary"][item];
 		});
+	})
+}
 
-		activeCasesDiv.appendChild(canvas);
+function showDetails(country){
+	//load14Days(country);
+/*
+	var activeCasesDiv = document.getElementById('activeCasesDiv');
+	activeCasesDiv.innerHTML = '';
+	var activeCasesData = getDailyCases(country);
+	var minX = activeCasesData[0].t;
+	var maxX = activeCasesData[activeCasesData.length-1].t;
 
-	  	document.getElementById("details").style.width = "100%";
-	}
-
-	function load14Days(country) {
-		var data = countryData[country];
-		var timeline = data["timeline"];
-		
-		var table = document.getElementById("last14days");
-		table.innerHTML = '';
-
-		var length = timeline.length;
-		length = Math.min(length, 12);
-		
-		var dateOptions = { year: '2-digit', month: '2-digit', day: '2-digit' };
-
-		for(var i = 0; i < length; i++) {
-		    var day = timeline[i];
-			var row = table.insertRow(-1);
-
-			var date = row.insertCell(0);
-			date.className = "number14";
-			var dateText = new Date(day["updated_at"]);
-			date.innerHTML = dateText.toLocaleDateString('de-DE', dateOptions);
-
-			var totalCases = row.insertCell(1);
-			totalCases.className = "number14";
-			totalCases.innerHTML = day["confirmed"];
-
-			var newCases = row.insertCell(2);
-			newCases.className = "number14";
-			newCases.innerHTML = day["new_confirmed"];
-
-			var sevenDays = row.insertCell(3);
-			sevenDays.className = "number14";
-			sevenDays.innerHTML = day["new_confirmed"] - timeline[i+7]["new_confirmed"];
-
-			var incidence = row.insertCell(4);
-			incidence.className = "number14";
-			incidence.innerHTML = day["new_deaths"];
-
-			var totalDeaths = row.insertCell(5);
-			totalDeaths.className = "number14";
-			totalDeaths.innerHTML = day["deaths"];
-
-			var newDeaths = row.insertCell(6);
-			newDeaths.className = "number14";
-			newDeaths.innerHTML = day["new_deaths"];
-
+	var canvas = document.createElement("canvas");
+	var myChart = new Chart(canvas, {
+	  type: 'line',
+	  data: {
+	    datasets: [{
+	      label: 'Active',
+	      borderColor: '#1d90c2',
+	      borderWidth: 2,
+	      pointRadius: 0,
+	      fill: 'false',
+	      data: activeCasesData
+	    }]
+	  },
+	  options: {
+	  	responsive: true,
+		plugins: {
+			zoom: {
+				pan: {
+					enabled: true,
+					mode: 'x',
+					rangeMin: {
+						x: minX
+					},
+					rangeMax: {
+						x: maxX
+					},
+				},
+				zoom: {
+					enabled: true,
+					mode: 'x',
+					rangeMin: {
+						x: minX
+					},
+					rangeMax: {
+						x: maxX
+					},
+				}
+			}
+		},
+	    scales: {
+			yAxes: [{
+	            ticks: {
+	                beginAtZero: true
+	            }
+			}],
+			xAxes: [{
+				type: 'time',
+                time: {
+                    displayFormats: {
+                        month: 'YY-MM'
+                    }
+                }
+			}]
 		}
-		sortTable(document.getElementById("summary_content"), 1);
-	}
+	  }
+	});
 
-	function getDailyCases(country){
-		var dailyCases = [];
-		var data = countryData[country]["timeline"];
+	activeCasesDiv.appendChild(canvas);
+*/
+  	document.getElementById("details").style.width = "100%";
+}
 
-		for(var i = 0; i < data.length; i++) {
-			var day = data[i];
-
-		    var dayData = {
-		    	t : new Date(day["updated_at"]),
-		    	y : day["active"]
-		    }
-		    dailyCases.push(dayData);
-
-		}
-		return dailyCases;
-	}
-
-	function hideDetails() {
-	  document.getElementById("details").style.width = "0%";
-	}
-</script>
-
-</html>
+function hideDetails() {
+	document.getElementById("details").style.width = "0%";
+}
