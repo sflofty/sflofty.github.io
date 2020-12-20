@@ -1,18 +1,10 @@
 //import './countryCleanName.js';
 
 function loadCountries() {
-	//var dataList = document.getElementById('filterOptions');
-	//clearName.forEach(function(key, value){
-	//	var option = document.createElement('option');
-	//	option.id = key;
-	//	option.value = key;
-	//    dataList.appendChild(option);
-	//});
-	
-	//updateFilter();
-
 	var request = new XMLHttpRequest();
 	request.open('GET', 'https://api.covid19api.com/summary');
+	//request.setRequestHeader('x-access-token', "5cf9dfd5-3449-485e-b5ae-70a60e997864");
+	request.setRequestHeader('access-control-allow-origin', "*");
 
 	request.onload = function () {
 		var data = JSON.parse(this.response).Countries;
@@ -21,7 +13,6 @@ function loadCountries() {
 		for(var i = 0; i < data.length; i++) {
 		    var country = data[i];
 		    var countryName = clearName[country.Country];
-
 		    countryToSlug[countryName] = country.Slug;
 		    sorted.push(countryName);
 		}
@@ -82,10 +73,7 @@ function downloadCountry(country){
 
 	var request = new XMLHttpRequest();
 	request.open('GET', url);
-
-	var preConfirmed = 0;
-	var preDeaths = 0;
-	var preRecovered = 0;
+	request.setRequestHeader('x-access-token', "5cf9dfd5-3449-485e-b5ae-70a60e997864");
 
 	request.onload = function () {
 		var data = JSON.parse(this.response);
@@ -93,15 +81,21 @@ function downloadCountry(country){
 		countryData[country] = {};
 		countryData[country]["history"] = {};
 
+		var preActive = 0;
+		var preConfirmed = 0;
+		var preDeaths = 0;
+		var preRecovered = 0;
+
 		data.forEach(function (item, index){
-			item["New Confirmed"] = item.Confirmed - preConfirmed;
-			item["New Deaths"] = item.Deaths - preDeaths;
-			item["New Recovered"] = item.Recovered - preRecovered;
-			item["± Active"] = item["New Confirmed"] - item["New Recovered"];
+			item["New Confirmed"] = Math.max(item.Confirmed - preConfirmed, 0);
+			item["New Deaths"] = Math.max(item.Deaths - preDeaths, 0);
+			item["New Recovered"] = Math.max(item.Recovered - preRecovered, 0);
+			item["± Active"] = item.Active - preActive;
 
 			preConfirmed = item.Confirmed;
 			preDeaths = item.Deaths;
 			preRecovered = item.Recovered;
+			preActive = item.Active;
 
 			var date = item.Date.slice(0,10);
 			var date7DaysAgo = new Date(new Date(item.Date) - (7 * 24 * 60 * 60 * 1000)).toISOString().slice(0,10);
@@ -114,7 +108,8 @@ function downloadCountry(country){
 					var daysAgo = new Date(new Date(item.Date) - (i * 24 * 60 * 60 * 1000)).toISOString().slice(0,10);
 					cases7Days += countryData[country]["history"][daysAgo]["New Confirmed"];
 				}
-				item["7 Days"] = cases7Days;
+				item["Confirmed ao7"] = Math.round(cases7Days / 7);
+				item["Incidence"] = Math.round(100000 * cases7Days / countryInfo[country]["population"]);
 			}
 
 			delete item["Lat"];
@@ -160,11 +155,25 @@ function loadSummary() {
 		//insert row for key = country
 		var row = table.insertRow(-1);
 
+		//insert first cell for country name and flag
 		var name = row.insertCell(-1);
-		name.innerHTML = key;
-		name.className = "rowID";
 		name.id = key;
 		name.addEventListener("click", function(){ showDetails(this.id) });
+
+		//add flag if it exists
+		if(countryInfo[key].flag != undefined){
+			var flag = document.createElement("IMG");
+			flag.src = countryInfo[key].flag;
+			flag.width = 45;
+			flag.className = "countryFlag";
+			name.appendChild(flag);
+		}
+
+		//add country name
+		var countryName = document.createElement("div");
+		countryName.innerHTML = key;
+		countryName.className = "countryName";
+		name.appendChild(countryName);
 
 		//insert columns from filter
 		filter_fields.forEach(function(item){

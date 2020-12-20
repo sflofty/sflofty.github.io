@@ -1,10 +1,11 @@
 function showDetails(country){
 	load14Days(country);
-  	document.getElementById("details").style.width = "100%";
+	drawGraph(country, "New Confirmed");
+  	document.getElementById("details").style.height = "100%";
 }
 
 function hideDetails() {
-	document.getElementById("details").style.width = "0%";
+	document.getElementById("details").style.height = "0%";
 }
 
 function load14daysHeader(){
@@ -24,7 +25,7 @@ function load14Days(country) {
 	var table = document.getElementById("14days_content");
 	table.innerHTML = '';
 
-	var datesArray = numberOfDates(9);
+	var datesArray = numberOfDates(30);
 
 	datesArray.forEach(function(date){
 		if(!(date in countryData[country]["history"])) return;
@@ -54,86 +55,92 @@ function numberOfDates(days) {
 	return array;
 };
 
-function drawGraph(){
-	var activeCasesDiv = document.getElementById('activeCasesDiv');
-	activeCasesDiv.innerHTML = '';
-	var activeCasesData = getDailyCases(country);
-	var minX = activeCasesData[0].t;
-	var maxX = activeCasesData[activeCasesData.length-1].t;
+function drawGraph(country, field){
+	var dataSets = getDataSets(country);
 
-	var canvas = document.createElement("canvas");
-	var myChart = new Chart(canvas, {
-	  type: 'line',
-	  data: {
-	    datasets: [{
-	      label: 'Active',
-	      borderColor: '#1d90c2',
-	      borderWidth: 2,
-	      pointRadius: 0,
-	      fill: 'false',
-	      data: activeCasesData
-	    }]
-	  },
-	  options: {
-	  	responsive: true,
-		plugins: {
-			zoom: {
-				pan: {
-					enabled: true,
-					mode: 'x',
-					rangeMin: {
-						x: minX
-					},
-					rangeMax: {
-						x: maxX
-					},
-				},
-				zoom: {
-					enabled: true,
-					mode: 'x',
-					rangeMin: {
-						x: minX
-					},
-					rangeMax: {
-						x: maxX
-					},
-				}
-			}
-		},
-	    scales: {
-			yAxes: [{
-	            ticks: {
-	                beginAtZero: true
-	            }
-			}],
-			xAxes: [{
-				type: 'time',
-                time: {
-                    displayFormats: {
-                        month: 'YY-MM'
-                    }
-                }
-			}]
-		}
-	  }
+	var ctx = document.getElementById('chart_details').getContext('2d');
+
+	if(detailsChart != undefined) detailsChart.destroy();
+	detailsChart = new Chart(ctx, {
+	    type: 'line',
+	    data: {
+	        datasets: dataSets
+	    },
+	    options: {
+	        scales: {
+	            xAxes: [{
+	                type: 'time',
+	                time: {
+	                    unit: 'week'
+	                }
+	            }],
+	            yAxes: [{
+	                ticks: {
+	                    beginAtZero: true,
+               			fontSize: 16,
+               			maxTicksLimit: 9,
+	                }
+	            }]
+	        }
+	    }
 	});
-
-	activeCasesDiv.appendChild(canvas);
 }
 
-function getDailyCases(country){
-	var dailyCases = [];
-	var data = countryData[country]["timeline"];
+function getDataSets(country){
+	var defaultSet = {
+	            fill: false,
+	            borderColor: 'rgba(217, 166, 0, 1)',
+	            borderWidth: 2,
+            	lineTension: 0,    
+	            pointRadius: 0
+	        };
 
-	for(var i = 0; i < data.length; i++) {
-		var day = data[i];
+	var dataSets = [];
 
-	    var dayData = {
-	    	t : new Date(day["updated_at"]),
-	    	y : day["active"]
-	    }
-	    dailyCases.push(dayData);
+	var colors_14days = {
+		"Active": 'rgba(232, 232, 232, 1)',
+		"± Active": 'rgba(94, 94, 94, 1)',
+		"± 7d ago": 'rgba(156, 77, 179, 1)',
+		"Incidence": 'rgba(19, 186, 186, 1)',
+		"Confirmed ao7": 'rgba(99, 55, 10, 1)',
+		"New Confirmed": 'rgba(217, 166, 0, 0.8)',
+		"New Recovered": 'rgba(22, 107, 38, 0.8)',
+		"New Deaths": 'rgba(181, 0, 0, 0.8)'
+	};
 
+	var today = new Date();
+
+	fields_14days.forEach(function(item){
+		var dataSet = {...defaultSet};
+		dataSet["data"] = getData(country, item, new Date().setDate(today.getDate()-90), today);
+		dataSet["label"] = item;
+		dataSet["borderColor"] = colors_14days[item];
+         dataSet["hidden"]= true;
+		if(item.includes("New")) {
+			dataSet["type"] = "bar";
+			dataSet["borderWidth"] = 1;
+			dataSet["backgroundColor"] = colors_14days[item];
+			dataSet["fill"] = true;
+		}
+		dataSets.push(dataSet);
+	});
+
+	return dataSets;
+}
+
+function getData(country, field, startDate, endDate){
+	var dataSet = [];
+	var data = countryData[country]["history"];
+
+	for (var key in data) {
+		var datapoint = {};
+		var date = new Date(key);
+		if(date < startDate || date > endDate) continue;
+
+		datapoint["t"] = date;
+		datapoint["y"] = data[key][field];
+		dataSet.push(datapoint);
 	}
-	return dailyCases;
+
+	return dataSet;
 }
