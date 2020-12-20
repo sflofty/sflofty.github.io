@@ -138,7 +138,7 @@ function downloadCountry(country){
 }
 
 function loadHeader(){
-	var header = document.getElementById("header");
+	var header = document.getElementById("summary_header");
 
 	//insert header from filter
 	filter_fields.forEach(function(item){
@@ -162,6 +162,7 @@ function loadSummary() {
 
 		var name = row.insertCell(-1);
 		name.innerHTML = key;
+		name.className = "rowID";
 		name.id = key;
 		name.addEventListener("click", function(){ showDetails(this.id) });
 
@@ -173,80 +174,5 @@ function loadSummary() {
 		});
 	})
 
-	sortTable(document.getElementById("table_summary"), 1, 'desc');
-}
-
-function showDetails(country){
-	//load14Days(country);
-/*
-	var activeCasesDiv = document.getElementById('activeCasesDiv');
-	activeCasesDiv.innerHTML = '';
-	var activeCasesData = getDailyCases(country);
-	var minX = activeCasesData[0].t;
-	var maxX = activeCasesData[activeCasesData.length-1].t;
-
-	var canvas = document.createElement("canvas");
-	var myChart = new Chart(canvas, {
-	  type: 'line',
-	  data: {
-	    datasets: [{
-	      label: 'Active',
-	      borderColor: '#1d90c2',
-	      borderWidth: 2,
-	      pointRadius: 0,
-	      fill: 'false',
-	      data: activeCasesData
-	    }]
-	  },
-	  options: {
-	  	responsive: true,
-		plugins: {
-			zoom: {
-				pan: {
-					enabled: true,
-					mode: 'x',
-					rangeMin: {
-						x: minX
-					},
-					rangeMax: {
-						x: maxX
-					},
-				},
-				zoom: {
-					enabled: true,
-					mode: 'x',
-					rangeMin: {
-						x: minX
-					},
-					rangeMax: {
-						x: maxX
-					},
-				}
-			}
-		},
-	    scales: {
-			yAxes: [{
-	            ticks: {
-	                beginAtZero: true
-	            }
-			}],
-			xAxes: [{
-				type: 'time',
-                time: {
-                    displayFormats: {
-                        month: 'YY-MM'
-                    }
-                }
-			}]
-		}
-	  }
-	});
-
-	activeCasesDiv.appendChild(canvas);
-*/
-  	document.getElementById("details").style.width = "100%";
-}
-
-function hideDetails() {
-	document.getElementById("details").style.width = "0%";
+	sortTable(document.getElementById("summary_table"), 1, 'desc');
 }
