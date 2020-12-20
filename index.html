@@ -1,12 +1,14 @@
-<html style="zoom: 125%;">
+<html style="zoom: 100%;">
 
 
 <head>
 	<title>Corona Stats</title>
 	<script src="Chart.bundle.js"> </script>
 	<script src="functions.js"></script>
+	<script src="countryCleanName.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/hammerjs"></script>
 	<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
+    <script type="text/javascript" src="sort-table.js"></script>
 
 </head>
 
@@ -37,38 +39,62 @@
     	float: right;
 	}
 
-	input {
-	  border: 1px solid transparent;
-	  background-color: #f1f1f1;
-	  padding: 10px;
-	  font-size: 16px;
-	}
-
-	button.add {
-	  border: 1px solid transparent;
-	  padding: 10px;
-	  font-size: 16px;
-	  background-color: DodgerBlue;
-	  color: #fff;
-	  cursor: pointer;
-	}
-
 	div.country {
 		background: #DDDDDD;
 		border-radius: 0.3em;
 		display: inline-block;
+		margin-right: 10px;
   		padding: 0.3em;
-    	margin: 5px;
 	}
 
-	table{
+	input {
+		border-radius: 0.3em;
+		border: 1px solid transparent;
+		background-color: #f1f1f1;
+		width:40%;
+		padding: 10px;
+		margin-right: 10px;
+		font-size: 16px;
+	}
+
+	button.add {
+		border: 1px solid transparent;
+		padding: 10px;
+		font-size: 16px;
+		background-color: #0889a3;
+		color: #FFFFFF;
+		cursor: pointer;
+		width: 10%;
+	}
+
+	table.js-sort-table{
 		width: 100%;
 		table-layout: fixed;
-            border: 1px solid black; 
 	}
 
+	table tr:nth-child(odd) {
+    	background-color: #DDDDDD;
+	}
+
+	table tr:nth-child(even) {
+    	background-color: #FFFFFF;
+	}
+
+	table .js-sort-number {
+		background-color: #0889a3;
+	  	color: #FFFFFF;
+		padding: 5px;
+	}
+
+	table .countryHeader {
+		width: 15%;
+		background-color: #0889a3;
+	  	color: #FFFFFF;
+		padding: 5px;
+	}
 	.number {
 		text-align: right;
+		padding: 5px;
 	}
 
 	.number14 {
@@ -80,7 +106,6 @@
 </style>
 
 <body>
-
 	<div id="details" class="overlay">
   		<div onclick="hideDetails()" class="hide">×</div>
   		<div style="color: #0000ff">
@@ -102,8 +127,8 @@
   		<div id="activeCasesDiv" width="40%" height="20%"></div>
 	</div>
 
-	<div class="autocomplete" style="width:300px;">
-		<input id="filterInput" onChange="addFilter()" style="border-radius: 0.3em;" list="filterOptions" placeholder="Country" />
+	<div class="autocomplete">
+		<input id="filterInput" onChange="addFilter()" list="filterOptions" placeholder="Country" />
 		<datalist id="filterOptions"></datalist>
   		<button class="add" onclick="addFilter()" style="border-radius: 0.3em;">Add</button>
 	</div>
@@ -111,10 +136,10 @@
 	<div id="countryFilter" style="margin-top: 10px;">	</div>
 
 	<div style="margin-top: 10px;">
-		<table class="sortable" id="table_summary" width="100%">
+		<table class="js-sort-table" id="table_summary" width="100%">
 			<thead style="text-align: left">
 				<tr id="header">
-					<th style="width: 20%">Country</th>
+					<th class="countryHeader">Country</th>
 				</tr>
 			</thead>
 			<tbody id="summary_content">
@@ -125,14 +150,16 @@
 </body>
 
 <script>
-	var filter_countries = ["Germany", "France", "United States of America", "Korea (South)"];
-	var filter_fields = ["Active", "Confirmed", "New Confirmed", "± 7d Cases", "Deaths", "New Deaths"];
+	var filter_countries = ["Germany", "France", "USA", "S. Korea"];
+	var filter_fields = ["Active", "New Confirmed", "± Active", "± 7d ago", "7 Days", "New Deaths", "Date"];
 
 	loadHeader();
 
 	var countryToSlug = {};
 	loadCountries();
 	var countryData = {};
+
+
 
 </script>
 
