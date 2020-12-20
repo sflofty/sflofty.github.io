@@ -3,44 +3,46 @@
 
 <head>
 	<title>Corona Stats</title>
-	<script src="Chart.bundle.js"> </script>
 	<script src="functions.js"></script>
 	<script src="details.js"></script>
-	<script src="countryCleanName.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/hammerjs"></script>
-	<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
+	<script src="countryInfo.js"></script>
+
+	<script src="Chart.bundle.js"> </script>
+
     <script type="text/javascript" src="sort-table.js"></script>
 
 </head>
 
 <style>
 	body {
-	  font-family: Arial;
+		font-family: Arial;
+  		color: #c9c9c9;
+		background: #141414;
 	}
 
 	.overlay {
-	  height: 100%;
-	  width: 0;
-	  position: fixed; /* Stay in place */
-	  z-index: 1; /* Sit on top */
-	  left: 0;
-	  top: 0;
-	  background-color: rgba(220,220,220, 0.80); /* Black w/opacity */
-	  overflow-x: hidden; /* Disable horizontal scroll */
-	  transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+		height: 0;
+		width: 100%;
+		position: fixed; /* Stay in place */
+		z-index: 1; /* Sit on top */
+		left: 0;
+		top: 0;
+		background-color: #242222;
+		overflow-x: hidden;
+		transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
 	}
 
 	div.hide {
-		background: #DDDDDD;
+		background: #003152;
 		border-radius: 0.5em;
 		display: inline-block;
   		padding: 0.5em;
-    	margin: 20px;
+    	font-size: 2em;
     	float: right;
 	}
 
 	div.country {
-		background: #DDDDDD;
+		background: #2e2e2e;
 		border-radius: 0.3em;
 		display: inline-block;
 		margin-right: 10px;
@@ -50,7 +52,7 @@
 	input {
 		border-radius: 0.3em;
 		border: 1px solid transparent;
-		background-color: #f1f1f1;
+		background-color: #2e2e2e;
 		width:40%;
 		padding: 10px;
 		margin-right: 10px;
@@ -61,10 +63,10 @@
 		border: 1px solid transparent;
 		padding: 10px;
 		font-size: 16px;
-		background-color: #0889a3;
-		color: #FFFFFF;
+		background-color: #003152;
 		cursor: pointer;
 		width: 10%;
+  		color: #c9c9c9;
 	}
 
 	table.js-sort-table{
@@ -73,51 +75,62 @@
 	}
 
 	table tr:nth-child(odd) {
-    	background-color: #DDDDDD;
+    	background-color: #262626;
 	}
 
 	table tr:nth-child(even) {
-    	background-color: #FFFFFF;
+    	background-color: #3d3d3d;
 	}
 
 	table .js-sort-number {
-		background-color: #0889a3;
-	  	color: #FFFFFF;
+		background-color: #003152;
 		padding: 5px;
 	}
 
 	table .countryHeader {
 		width: 15%;
-		background-color: #0889a3;
-	  	color: #FFFFFF;
+		background-color: #003152;
 		padding: 5px;
+	}
+
+	.countryFlag {
+		padding: 5px;
+   		display: inline-block;
+		vertical-align: middle;
+	}
+
+	.countryName {
+		padding: 5px;
+   		display: inline-block;
+		vertical-align: middle;
 	}
 
 	.number {
 		text-align: right;
 		padding: 5px;
 	}
-
-	.rowID {
-		padding: 5px;
-	}
 	
 </style>
 
-<body>
+<body style="margin:20px;">
 	<div id="details" class="overlay">
-  		<div onclick="hideDetails()" class="hide">×</div>
-		<div style="margin-top: 10px;">
-			<table class="js-sort-table" id="14days_table" width="100%">
-				<thead style="text-align: left">
-					<tr id="14days_header">
-						<th class="countryHeader">Date</th>
-					</tr>
-				</thead>
-				<tbody id="14days_content"></tbody>
-			</table>
+		<div style="margin:20px">
+	  		<div onclick="hideDetails()" class="hide">×</div>
+
+	  		<canvas id="chart_details" width="100%" height="30%"></canvas>
+
+			<div style="margin-top: 20px;">
+				<table class="js-sort-table" id="14days_table" width="100%">
+					<thead style="text-align: left">
+						<tr id="14days_header">
+							<th class="countryHeader">Date</th>
+						</tr>
+					</thead>
+					<tbody id="14days_content"></tbody>
+				</table>
+			</div>
+
 		</div>
-  		<div id="activeCasesDiv" width="40%" height="20%"></div>
 	</div>
 
 	<div class="autocomplete">
@@ -138,13 +151,12 @@
 			<tbody id="summary_content"></tbody>
 		</table>
 	</div>
-
 </body>
 
 <script>
 	var filter_countries = ["Germany", "France", "USA", "S. Korea"];
-	var filter_fields = ["Active", "New Confirmed", "± Active", "± 7d ago", "7 Days", "New Deaths", "Date"];
-	var fields_14days = ["Active", "New Confirmed", "New Recovered", "± Active", "± 7d ago", "7 Days", "New Deaths"];
+	var filter_fields = ["Active", "New Confirmed", "± Active", "± 7d ago", "Incidence", "New Deaths", "Date"];
+	var fields_14days = ["Active", "± Active", "± 7d ago", "Incidence", "Confirmed ao7", "New Confirmed", "New Recovered", "New Deaths"];
 
 	loadHeader();
 	load14daysHeader();
@@ -153,8 +165,7 @@
 	loadCountries();
 
 	var countryData = {};
-
-
+	var detailsChart;
 
 </script>
 
