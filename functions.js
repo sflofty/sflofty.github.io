@@ -1,4 +1,16 @@
+//import './countryCleanName.js';
+
 function loadCountries() {
+	//var dataList = document.getElementById('filterOptions');
+	//clearName.forEach(function(key, value){
+	//	var option = document.createElement('option');
+	//	option.id = key;
+	//	option.value = key;
+	//    dataList.appendChild(option);
+	//});
+	
+	//updateFilter();
+
 	var request = new XMLHttpRequest();
 	request.open('GET', 'https://api.covid19api.com/summary');
 
@@ -8,8 +20,10 @@ function loadCountries() {
 		var sorted = [];
 		for(var i = 0; i < data.length; i++) {
 		    var country = data[i];
-		    countryToSlug[country.Country] = country.Slug;
-		    sorted.push(country.Country);
+		    var countryName = clearName[country.Country];
+
+		    countryToSlug[countryName] = country.Slug;
+		    sorted.push(countryName);
 		}
 
 		sorted.sort();
@@ -83,6 +97,7 @@ function downloadCountry(country){
 			item["New Confirmed"] = item.Confirmed - preConfirmed;
 			item["New Deaths"] = item.Deaths - preDeaths;
 			item["New Recovered"] = item.Recovered - preRecovered;
+			item["± Active"] = item["New Confirmed"] - item["New Recovered"];
 
 			preConfirmed = item.Confirmed;
 			preDeaths = item.Deaths;
@@ -91,7 +106,16 @@ function downloadCountry(country){
 			var date = item.Date.slice(0,10);
 			var date7DaysAgo = new Date(new Date(item.Date) - (7 * 24 * 60 * 60 * 1000)).toISOString().slice(0,10);
 
-			if(index > 6) item["± 7d Cases"] = item["New Confirmed"] - countryData[country]["history"][date7DaysAgo]["New Confirmed"];
+			if(index > 6) {
+				item["± 7d ago"] = item["New Confirmed"] - countryData[country]["history"][date7DaysAgo]["New Confirmed"];
+
+				var cases7Days = item["New Confirmed"];
+				for (var i=1; i<7; i++){
+					var daysAgo = new Date(new Date(item.Date) - (i * 24 * 60 * 60 * 1000)).toISOString().slice(0,10);
+					cases7Days += countryData[country]["history"][daysAgo]["New Confirmed"];
+				}
+				item["7 Days"] = cases7Days;
+			}
 
 			delete item["Lat"];
 			delete item["Lon"];
@@ -100,7 +124,7 @@ function downloadCountry(country){
 			delete item["CountryCode"];
 			delete item["Province"];
 			delete item["Country"];
-			delete item["Date"];
+			item["Date"] = date;
 
 			countryData[country]["history"][date] = item;
 
@@ -110,7 +134,6 @@ function downloadCountry(country){
 		loadSummary();
 	}
 
-	console.log(countryData)
 	request.send();
 }
 
@@ -120,7 +143,7 @@ function loadHeader(){
 	//insert header from filter
 	filter_fields.forEach(function(item){
 		var cell = document.createElement("th");
-		cell.className = "number";
+		cell.className = "js-sort-number";
 		cell.innerHTML = item;
 		header.appendChild(cell);
 	});
@@ -136,17 +159,21 @@ function loadSummary() {
 
 		//insert row for key = country
 		var row = table.insertRow(-1);
-		row.innerHTML = key;
-		row.id = key;
-		row.addEventListener("click", function(){ showDetails(this.id) });
+
+		var name = row.insertCell(-1);
+		name.innerHTML = key;
+		name.id = key;
+		name.addEventListener("click", function(){ showDetails(this.id) });
 
 		//insert columns from filter
 		filter_fields.forEach(function(item){
-			var column = row.insertCell(-1);
-			column.className = "number";
-			column.innerHTML = countryData[key]["summary"][item];
+			var cell = row.insertCell(-1);
+			cell.className = "number";
+			cell.innerHTML = countryData[key]["summary"][item];
 		});
 	})
+
+	sortTable(document.getElementById("table_summary"), 1, 'desc');
 }
 
 function showDetails(country){
