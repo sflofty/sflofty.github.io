@@ -5,6 +5,7 @@
 	<title>Corona Stats</title>
 	<script src="Chart.bundle.js"> </script>
 	<script src="functions.js"></script>
+	<script src="details.js"></script>
 	<script src="countryCleanName.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/hammerjs"></script>
 	<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
@@ -24,8 +25,7 @@
 	  z-index: 1; /* Sit on top */
 	  left: 0;
 	  top: 0;
-	  background-color: rgb(0,0,0); /* Black fallback color */
-	  background-color: rgba(0,0,0, 0.95); /* Black w/opacity */
+	  background-color: rgba(220,220,220, 0.80); /* Black w/opacity */
 	  overflow-x: hidden; /* Disable horizontal scroll */
 	  transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
 	}
@@ -92,15 +92,14 @@
 	  	color: #FFFFFF;
 		padding: 5px;
 	}
+
 	.number {
 		text-align: right;
 		padding: 5px;
 	}
 
-	.number14 {
-		font-size: medium;
-		color: white;
-		text-align: right;
+	.rowID {
+		padding: 5px;
 	}
 	
 </style>
@@ -108,20 +107,14 @@
 <body>
 	<div id="details" class="overlay">
   		<div onclick="hideDetails()" class="hide">×</div>
-  		<div style="color: #0000ff">
-			<table>
+		<div style="margin-top: 10px;">
+			<table class="js-sort-table" id="14days_table" width="100%">
 				<thead style="text-align: left">
-					<tr style="color: white">
-						<th>Date</th>
-						<th style="text-align: right;">Total Cases</th>
-						<th style="text-align: right;">New Cases</th>
-						<th style="text-align: right;">± 7 d</th>
-						<th style="text-align: right;">7 d incidence per 100k</th>
-						<th style="text-align: right;">Total Deaths</th>
-						<th style="text-align: right;">New Deaths</th>
+					<tr id="14days_header">
+						<th class="countryHeader">Date</th>
 					</tr>
 				</thead>
-				<tbody id="last14days"></tbody>
+				<tbody id="14days_content"></tbody>
 			</table>
 		</div>
   		<div id="activeCasesDiv" width="40%" height="20%"></div>
@@ -136,14 +129,13 @@
 	<div id="countryFilter" style="margin-top: 10px;">	</div>
 
 	<div style="margin-top: 10px;">
-		<table class="js-sort-table" id="table_summary" width="100%">
+		<table class="js-sort-table" id="summary_table" width="100%">
 			<thead style="text-align: left">
-				<tr id="header">
+				<tr id="summary_header">
 					<th class="countryHeader">Country</th>
 				</tr>
 			</thead>
-			<tbody id="summary_content">
-			</tbody>
+			<tbody id="summary_content"></tbody>
 		</table>
 	</div>
 
@@ -152,11 +144,14 @@
 <script>
 	var filter_countries = ["Germany", "France", "USA", "S. Korea"];
 	var filter_fields = ["Active", "New Confirmed", "± Active", "± 7d ago", "7 Days", "New Deaths", "Date"];
+	var fields_14days = ["Active", "New Confirmed", "New Recovered", "± Active", "± 7d ago", "7 Days", "New Deaths"];
 
 	loadHeader();
+	load14daysHeader();
 
 	var countryToSlug = {};
 	loadCountries();
+
 	var countryData = {};
 
 
