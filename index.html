@@ -16,8 +16,10 @@
 <style>
 	body {
 		font-family: Arial;
+    	font-size: 2em;
   		color: #c9c9c9;
-		background: #141414;
+		background-color: #141414;
+		margin:1em;
 	}
 
 	.overlay {
@@ -27,97 +29,107 @@
 		z-index: 1; /* Sit on top */
 		left: 0;
 		top: 0;
-		background-color: #242222;
+		background-color: #141414;
 		overflow-x: hidden;
-		transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+		transition: 0.5s;
 	}
 
-	div.hide {
-		background: #003152;
-		border-radius: 0.5em;
-		display: inline-block;
-  		padding: 0.5em;
-    	font-size: 2em;
-    	float: right;
+	button.hide {
+		background: #aaaaaa;
+		border-radius: 0.2em;
+		cursor: pointer;
+		font-size: 2em;
+		padding: 0.25em;
+		max-width: 1em;
+		flex: 3;	}
+
+	input {
+		background-color: #2e2e2e;
+		border-radius: 0.3em;
+		border: 1px solid transparent;
+		width: 50%;
+		font-size: 1em;
+		padding: 0.5em;
+		margin-right: 0.5em;
+		margin-bottom:: 2em;
+	}
+
+	button.add {
+		border: 1px solid transparent;
+		background-color: #003152;
+		cursor: pointer;
+		font-size: 1em;
+		padding: 0.5em;
+  		color: #c9c9c9;
 	}
 
 	div.country {
 		background: #2e2e2e;
 		border-radius: 0.3em;
 		display: inline-block;
-		margin-right: 10px;
-  		padding: 0.3em;
-	}
-
-	input {
-		border-radius: 0.3em;
-		border: 1px solid transparent;
-		background-color: #2e2e2e;
-		width:40%;
-		padding: 10px;
-		margin-right: 10px;
-		font-size: 16px;
-	}
-
-	button.add {
-		border: 1px solid transparent;
-		padding: 10px;
-		font-size: 16px;
-		background-color: #003152;
-		cursor: pointer;
-		width: 10%;
-  		color: #c9c9c9;
+		margin-right: 0.5em;
+  		padding: 0.5em;
 	}
 
 	table.js-sort-table{
-		width: 100%;
-		table-layout: fixed;
+		font-size: 1em;
+		border-collapse: collapse;
+	    overflow-x: auto;
+	    display: block;
 	}
 
-	table tr:nth-child(odd) {
-    	background-color: #262626;
-	}
-
-	table tr:nth-child(even) {
-    	background-color: #3d3d3d;
-	}
-
-	table .js-sort-number {
-		background-color: #003152;
-		padding: 5px;
+	table th.js-sort-number{
+	  	text-align: left;
+	  	text-align: center;
+	  	padding: 0.5em;
 	}
 
 	table .countryHeader {
-		width: 15%;
-		background-color: #003152;
-		padding: 5px;
+  		padding: 0.5em;
 	}
 
-	.countryFlag {
-		padding: 5px;
+	table tbody tr:nth-child(odd) {
+    	background-color: #262626;
+	}
+
+	img.countryFlag {
+  		padding: 0.5em;
    		display: inline-block;
 		vertical-align: middle;
 	}
 
-	.countryName {
-		padding: 5px;
+	div.countryName {
+		padding-right: 0.5em;
    		display: inline-block;
 		vertical-align: middle;
+	}
+
+	.rowID{
+		padding: 0.5em;
+	    white-space: nowrap;
 	}
 
 	.number {
+  		padding: 0.5em;
 		text-align: right;
-		padding: 5px;
+	    white-space: nowrap;
+	}
+
+	.detailsSummary {
+		flex: 1;
+		text-align: center;
 	}
 	
 </style>
 
-<body style="margin:20px;">
+<body>
 	<div id="details" class="overlay">
-		<div style="margin:20px">
-	  		<div onclick="hideDetails()" class="hide">×</div>
+		<div style="margin: 1em;">
+			<div id="detailsInfo"><img></div>
 
-	  		<canvas id="chart_details" width="100%" height="30%"></canvas>
+			<div id="detailsSummary" style="margin-top: 1em; margin-bottom: 1em"><img></div>
+
+	  		<canvas id="chart_details"></canvas>
 
 			<div style="margin-top: 20px;">
 				<table class="js-sort-table" id="14days_table" width="100%">
@@ -129,11 +141,10 @@
 					<tbody id="14days_content"></tbody>
 				</table>
 			</div>
-
 		</div>
 	</div>
 
-	<div class="autocomplete">
+	<div class="autocomplete" style="margin-bottom: 1em">
 		<input id="filterInput" onChange="addFilter()" list="filterOptions" placeholder="Country" />
 		<datalist id="filterOptions"></datalist>
   		<button class="add" onclick="addFilter()" style="border-radius: 0.3em;">Add</button>
@@ -141,9 +152,9 @@
 
 	<div id="countryFilter" style="margin-top: 10px;">	</div>
 
-	<div style="margin-top: 10px;">
-		<table class="js-sort-table" id="summary_table" width="100%">
-			<thead style="text-align: left">
+	<div id="summary_container" style="margin-top: 1em; display: block;">
+		<table class="js-sort-table" id="summary_table">
+			<thead style="text-align: left;">
 				<tr id="summary_header">
 					<th class="countryHeader">Country</th>
 				</tr>
@@ -155,8 +166,8 @@
 
 <script>
 	var filter_countries = ["Germany", "France", "USA", "S. Korea"];
-	var filter_fields = ["Active", "New Confirmed", "± Active", "± 7d ago", "Incidence", "New Deaths", "Date"];
-	var fields_14days = ["Active", "± Active", "± 7d ago", "Incidence", "Confirmed ao7", "New Confirmed", "New Recovered", "New Deaths"];
+	var filter_fields = ["7d Incidence", "Active", "New Confirmed", "± Active", "± 7d ago", "New Deaths", "CFR %", "Date"];
+	var fields_14days = ["7d Incidence", "Active", "± Active", "± 7d ago", "New Confirmed", "Confirmed Ao7", "New Recovered", "New Deaths", "CFR %"];
 
 	loadHeader();
 	load14daysHeader();
@@ -166,7 +177,6 @@
 
 	var countryData = {};
 	var detailsChart;
-
 </script>
 
 </html>
