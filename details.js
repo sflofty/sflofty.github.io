@@ -1,11 +1,87 @@
 function showDetails(country){
+	addInfo(country);
+	addSummary(country);
 	load14Days(country);
 	drawGraph(country, "New Confirmed");
+
   	document.getElementById("details").style.height = "100%";
 }
 
 function hideDetails() {
 	document.getElementById("details").style.height = "0%";
+}
+
+function addInfo(country){
+	var detailsInfo = document.getElementById("detailsInfo");
+	detailsInfo.style.display = "flex";
+	detailsInfo.innerHTML = "";
+
+	//add flag if it exists
+	if(countryInfo[country].flag != undefined){
+		var flag = document.createElement("IMG");
+		flag.src = countryInfo[country].flag;
+		flag.style.width = "30%";
+		flag.style.flex = 1;
+		detailsInfo.appendChild(flag);
+	}
+
+	//add country name
+	var countryName = document.createElement("div");
+	countryName.innerHTML = country;
+	countryName.style.flex = 2;
+	countryName.style.fontSize = "2.5em";
+	countryName.style.textAlign = "center";
+	countryName.style.verticalAlign = "middle";
+	countryName.className = "countryName";
+	detailsInfo.appendChild(countryName);
+
+	//add country name
+	var buttonHide = document.createElement("BUTTON");
+	buttonHide.innerHTML = "x";
+	buttonHide.className = "hide";
+	buttonHide.onclick = function(){hideDetails()};
+	detailsInfo.appendChild(buttonHide);
+}
+
+function addSummary(country){
+	var today = new Date();
+
+	var detailsSummary = document.getElementById("detailsSummary");
+	detailsSummary.innerHTML = "";
+
+	var firstRow = document.createElement("div");
+	firstRow.style.display = "flex";
+	detailsSummary.appendChild(firstRow);
+
+	var totalContainer = document.createElement("div");
+	totalContainer.className = "detailsSummary";
+	totalContainer.innerHTML = "Total Confirmed";
+	firstRow.appendChild(totalContainer);
+
+	var totalValue = document.createElement("div");
+	totalValue.className = "detailsSummary";
+	totalValue.innerHTML = countryData[country]["summary"]["Confirmed"];
+	totalContainer.appendChild(totalValue);
+
+	var recoveredContainer = document.createElement("div");
+	recoveredContainer.className = "detailsSummary";
+	recoveredContainer.innerHTML = "Total Recovered";
+	firstRow.appendChild(recoveredContainer);
+
+	var recoveredValue = document.createElement("div");
+	recoveredValue.className = "detailsSummary";
+	recoveredValue.innerHTML = countryData[country]["summary"]["Recovered"];
+	recoveredContainer.appendChild(recoveredValue);
+
+	var totalDeathsContainer = document.createElement("div");
+	totalDeathsContainer.className = "detailsSummary";
+	totalDeathsContainer.innerHTML = "Total Deaths";
+	firstRow.appendChild(totalDeathsContainer);
+
+	var totalDeathsValue = document.createElement("div");
+	totalDeathsValue.className = "detailsSummary";
+	totalDeathsValue.innerHTML = countryData[country]["summary"]["Deaths"];
+	totalDeathsContainer.appendChild(totalDeathsValue);
 }
 
 function load14daysHeader(){
@@ -67,8 +143,15 @@ function drawGraph(country, field){
 	        datasets: dataSets
 	    },
 	    options: {
+	    	legend: {
+	    		labels: {
+	    			fontSize: 20,
+	    			padding: 20
+	    		}
+	    	},
 	        scales: {
 	            xAxes: [{
+	            	offset: true,
 	                type: 'time',
 	                time: {
 	                    unit: 'week'
@@ -77,7 +160,7 @@ function drawGraph(country, field){
 	            yAxes: [{
 	                ticks: {
 	                    beginAtZero: true,
-               			fontSize: 16,
+               			fontSize: 20,
                			maxTicksLimit: 9,
 	                }
 	            }]
@@ -101,11 +184,12 @@ function getDataSets(country){
 		"Active": 'rgba(232, 232, 232, 1)',
 		"± Active": 'rgba(94, 94, 94, 1)',
 		"± 7d ago": 'rgba(156, 77, 179, 1)',
-		"Incidence": 'rgba(19, 186, 186, 1)',
-		"Confirmed ao7": 'rgba(99, 55, 10, 1)',
+		"7d Incidence": 'rgba(19, 186, 186, 1)',
+		"Confirmed Ao7": 'rgba(99, 55, 10, 1)',
 		"New Confirmed": 'rgba(217, 166, 0, 0.8)',
 		"New Recovered": 'rgba(22, 107, 38, 0.8)',
-		"New Deaths": 'rgba(181, 0, 0, 0.8)'
+		"New Deaths": 'rgba(181, 0, 0, 0.8)',
+		"CFR %": 'rgba(181, 0, 0, 0.8)'
 	};
 
 	var today = new Date();
@@ -115,7 +199,7 @@ function getDataSets(country){
 		dataSet["data"] = getData(country, item, new Date().setDate(today.getDate()-90), today);
 		dataSet["label"] = item;
 		dataSet["borderColor"] = colors_14days[item];
-         dataSet["hidden"]= true;
+        if(!item.includes("Incidence") )  dataSet["hidden"] = true;
 		if(item.includes("New")) {
 			dataSet["type"] = "bar";
 			dataSet["borderWidth"] = 1;

@@ -4,10 +4,19 @@ function loadCountries() {
 	var request = new XMLHttpRequest();
 	request.open('GET', 'https://api.covid19api.com/summary');
 	//request.setRequestHeader('x-access-token', "5cf9dfd5-3449-485e-b5ae-70a60e997864");
-	request.setRequestHeader('access-control-allow-origin', "*");
+	//request.setRequestHeader('access-control-allow-origin', "*");
+
+	request.onerror = function() {
+		updateFilter();
+	}
 
 	request.onload = function () {
 		var data = JSON.parse(this.response).Countries;
+		
+		if(data == undefined) {
+			console.log("Countries not defined");
+			return;
+		}
 
 		var sorted = [];
 		for(var i = 0; i < data.length; i++) {
@@ -91,6 +100,7 @@ function downloadCountry(country){
 			item["New Deaths"] = Math.max(item.Deaths - preDeaths, 0);
 			item["New Recovered"] = Math.max(item.Recovered - preRecovered, 0);
 			item["± Active"] = item.Active - preActive;
+			item["CFR %"] = (100 * item.Deaths / item.Confirmed).toFixed(2);
 
 			preConfirmed = item.Confirmed;
 			preDeaths = item.Deaths;
@@ -108,8 +118,8 @@ function downloadCountry(country){
 					var daysAgo = new Date(new Date(item.Date) - (i * 24 * 60 * 60 * 1000)).toISOString().slice(0,10);
 					cases7Days += countryData[country]["history"][daysAgo]["New Confirmed"];
 				}
-				item["Confirmed ao7"] = Math.round(cases7Days / 7);
-				item["Incidence"] = Math.round(100000 * cases7Days / countryInfo[country]["population"]);
+				item["Confirmed Ao7"] = Math.round(cases7Days / 7);
+				item["7d Incidence"] = Math.round(100000 * cases7Days / countryInfo[country]["population"]);
 			}
 
 			delete item["Lat"];
@@ -133,14 +143,14 @@ function downloadCountry(country){
 }
 
 function loadHeader(){
-	var header = document.getElementById("summary_header");
+	var headerRow = document.getElementById("summary_header");
 
 	//insert header from filter
 	filter_fields.forEach(function(item){
-		var cell = document.createElement("th");
-		cell.className = "js-sort-number";
-		cell.innerHTML = item;
-		header.appendChild(cell);
+		var header = document.createElement("th");
+		header.className = "js-sort-number";
+		header.innerHTML = item;
+		headerRow.appendChild(header);
 	});
 			
 }
@@ -164,7 +174,7 @@ function loadSummary() {
 		if(countryInfo[key].flag != undefined){
 			var flag = document.createElement("IMG");
 			flag.src = countryInfo[key].flag;
-			flag.width = 45;
+			flag.style.width = "2em";
 			flag.className = "countryFlag";
 			name.appendChild(flag);
 		}
