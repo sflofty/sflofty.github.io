@@ -165,18 +165,18 @@
 </body>
 
 <script>
-	var filter_countries = ["Germany", "France", "USA", "S. Korea", "Finland", "Denmark"];
-	var filter_fields = ["7d Incidence", "Active", "New Confirmed", "± Active", "± 7d ago", "New Deaths", "CFR %", "Date"];
-	var fields_14days = ["7d Incidence", "Active", "± Active", "± 7d ago", "New Confirmed", "Confirmed Ao7", "New Recovered", "New Deaths", "CFR %"];
+	var filter_countries = ["Asia", "Europe", "Germany", "France", "United States", "South Korea", "Finland"];
+	var filter_fields = ["Incidence", "New Cases", "± 7d", "R", "Vaccinated %", "New Deaths", "CFR %", "Date"];
+	var fields_14days = ["Incidence", "New Cases", "± 7d", "R", "Vaccinated", "Vaccinated %", "Cases Ao7", "New Deaths", "CFR %"];
+
+	var allData = {};
+	var countryData = {};
+	var detailsChart;
 
 	loadHeader();
 	load14daysHeader();
 
-	var countryToSlug = {};
-	loadCountries();
-
-	var countryData = {};
-	var detailsChart;
+	downloadData();
 </script>
 
 </html>

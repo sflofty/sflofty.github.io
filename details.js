@@ -60,17 +60,17 @@ function addSummary(country){
 
 	var totalValue = document.createElement("div");
 	totalValue.className = "detailsSummary";
-	totalValue.innerHTML = countryData[country]["summary"]["Confirmed"];
+	totalValue.innerHTML = countryData[country]["summary"]["Total Cases"];
 	totalContainer.appendChild(totalValue);
 
 	var recoveredContainer = document.createElement("div");
 	recoveredContainer.className = "detailsSummary";
-	recoveredContainer.innerHTML = "Total Recovered";
+	recoveredContainer.innerHTML = "2 Doses %";
 	firstRow.appendChild(recoveredContainer);
 
 	var recoveredValue = document.createElement("div");
 	recoveredValue.className = "detailsSummary";
-	recoveredValue.innerHTML = countryData[country]["summary"]["Recovered"];
+	recoveredValue.innerHTML = countryData[country]["summary"]["Vaccinated %"];
 	recoveredContainer.appendChild(recoveredValue);
 
 	var totalDeathsContainer = document.createElement("div");
@@ -80,7 +80,7 @@ function addSummary(country){
 
 	var totalDeathsValue = document.createElement("div");
 	totalDeathsValue.className = "detailsSummary";
-	totalDeathsValue.innerHTML = countryData[country]["summary"]["Deaths"];
+	totalDeathsValue.innerHTML = countryData[country]["summary"]["Total Deaths"];
 	totalDeathsContainer.appendChild(totalDeathsValue);
 }
 
@@ -179,17 +179,16 @@ function getDataSets(country){
 	        };
 
 	var dataSets = [];
-
 	var colors_14days = {
-		"Active": 'rgba(232, 232, 232, 1)',
-		"± Active": 'rgba(94, 94, 94, 1)',
-		"± 7d ago": 'rgba(156, 77, 179, 1)',
-		"7d Incidence": 'rgba(19, 186, 186, 1)',
-		"Confirmed Ao7": 'rgba(99, 55, 10, 1)',
-		"New Confirmed": 'rgba(217, 166, 0, 0.8)',
-		"New Recovered": 'rgba(22, 107, 38, 0.8)',
+		"± 7d": 'rgba(156, 77, 179, 1)',
+		"Incidence": 'rgba(19, 186, 186, 1)',
+		"Cases Ao7": 'rgba(99, 55, 10, 1)',
+		"New Cases": 'rgba(217, 166, 0, 0.8)',
 		"New Deaths": 'rgba(181, 0, 0, 0.8)',
-		"CFR %": 'rgba(181, 0, 0, 0.8)'
+		"R": 'rgba(255, 255, 255, 0.8)',
+		"CFR %": 'rgba(181, 0, 0, 0.8)',
+		"Vaccinated": 'rgba(60, 168, 50, 0.8)',
+		"Vaccinated %": 'rgba(60, 168, 50, 0.8)'
 	};
 
 	var today = new Date();
