@@ -2,9 +2,30 @@ function showDetails(country){
 	addInfo(country);
 	addSummary(country);
 	load14Days(country);
+	addDateSlider(country);
 	drawGraph(country, "New Confirmed");
 
   	document.getElementById("details").style.height = "100%";
+}
+
+function addDateSlider(country){
+	var sliderDiv = document.getElementById("dateRange");
+    sliderDiv.innerHTML = '';
+
+	var slider = document.createElement("input");
+	slider.min = 4;
+	slider.max = Object.keys(countryData[country]["history"]).length;
+	slider.type = "range";
+	slider.className = "slider";
+	slider.oninput = function() {
+        numberOfDays = slider.max - this.value + 4;
+	    drawGraph(country, "New Confirmed");
+	    load14Days(country);
+    }
+    slider.step = 3;
+    slider.defaultValue = slider.max - numberOfDays + 4 ;
+
+	sliderDiv.appendChild(slider);
 }
 
 function hideDetails() {
@@ -17,9 +38,9 @@ function addInfo(country){
 	detailsInfo.innerHTML = "";
 
 	//add flag if it exists
-	if(countryInfo[country].flag != undefined){
+	if(flags[countryToISO[country]] != undefined){
 		var flag = document.createElement("IMG");
-		flag.src = countryInfo[country].flag;
+		flag.src = flags[countryToISO[country]];
 		flag.style.width = "30%";
 		flag.style.flex = 1;
 		detailsInfo.appendChild(flag);
@@ -101,7 +122,7 @@ function load14Days(country) {
 	var table = document.getElementById("14days_content");
 	table.innerHTML = '';
 
-	var datesArray = numberOfDates(30);
+	var datesArray = numberOfDates(numberOfDays);
 
 	datesArray.forEach(function(date){
 		if(!(date in countryData[country]["history"])) return;
@@ -143,6 +164,9 @@ function drawGraph(country, field){
 	        datasets: dataSets
 	    },
 	    options: {
+            animation: {
+                duration: 0
+            },
 	    	legend: {
 	    		labels: {
 	    			fontSize: 20,
@@ -195,7 +219,7 @@ function getDataSets(country){
 
 	fields_14days.forEach(function(item){
 		var dataSet = {...defaultSet};
-		dataSet["data"] = getData(country, item, new Date().setDate(today.getDate()-90), today);
+		dataSet["data"] = getData(country, item, new Date().setDate(today.getDate()-numberOfDays), today);
 		dataSet["label"] = item;
 		dataSet["borderColor"] = colors_14days[item];
         if(!item.includes("Incidence") )  dataSet["hidden"] = true;

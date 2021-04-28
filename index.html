@@ -119,6 +119,23 @@
 		flex: 1;
 		text-align: center;
 	}
+
+	.slider {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 100%;
+		height: 25px;
+		background: #4d5052;
+	}
+
+	.slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 25px;
+		height: 25px;
+		background: #1186ad;
+		cursor: pointer;
+	}
 	
 </style>
 
@@ -130,6 +147,7 @@
 			<div id="detailsSummary" style="margin-top: 1em; margin-bottom: 1em"><img></div>
 
 	  		<canvas id="chart_details"></canvas>
+			<div id="dateRange" style="margin-top: 1em; margin-bottom: 1em"></div>
 
 			<div style="margin-top: 20px;">
 				<table class="js-sort-table" id="14days_table" width="100%">
@@ -165,9 +183,10 @@
 </body>
 
 <script>
-	var filter_countries = ["Asia", "Europe", "Germany", "France", "United States", "South Korea", "Finland"];
+	var filter_countries = ["Asia", "Europe", "Germany", "France", "United States", "South Korea", "Finland", "India"];
 	var filter_fields = ["Incidence", "New Cases", "± 7d", "R", "Vaccinated %", "New Deaths", "CFR %", "Date"];
 	var fields_14days = ["Incidence", "New Cases", "± 7d", "R", "Vaccinated", "Vaccinated %", "Cases Ao7", "New Deaths", "CFR %"];
+	var numberOfDays = 90;
 
 	var allData = {};
 	var countryData = {};
@@ -177,6 +196,7 @@
 	load14daysHeader();
 
 	downloadData();
+
 </script>
 
 </html>

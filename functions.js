@@ -55,7 +55,22 @@ function updateFilter(){
 		document.getElementById('countryFilter').appendChild(div);
 	})
 
+    //updateURL();
 	loadSummary();
+}
+
+function updateURL(){
+    var oldUrl = window.location.href;
+    console.log(oldUrl);
+    var baseURL = oldUrl.substr(0, oldUrl.lastIndexOf('/'));
+    console.log(baseURL);
+    var url = "";
+
+    filter_countries.forEach(function(item){
+        url += url + "&" + item.split(' ').join('_');
+    });
+
+    window.location = oldUrl + "?" + url;
 }
 
 function addFilter(){
@@ -81,7 +96,6 @@ function calcData(country){
 
         day["Total Cases"] = item.total_cases;
         day["Total Deaths"] = item.total_deaths;
-
 
         day["New Cases"] = item.new_cases;
         day["New Deaths"] = item.new_deaths;
