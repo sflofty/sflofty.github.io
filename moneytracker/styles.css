@@ -1,0 +1,16 @@
+ 
+.digit {
+    position: relative;
+    float: left;
+    margin-right: 5px;
+
+    font-size: 5em;
+    color: #ffffff;
+    background: #1f1f1f;
+
+    width: 0.8em;
+
+    border-radius: 0.2em;
+    display: flex; 
+    justify-content: center;
+}
