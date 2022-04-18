@@ -1,0 +1,15 @@
+- Feste Einnahmen und Ausgaben
+- In der App kann man Eingaben/Ausgaben einfügen
+- App soll durchgehend 
+
+- Goals setzen (Bestimmte Objekte) als Push Benachrichtigung (z.B. alle 1000€ benachrichtigung)
+- Eigenene Währung eingeben (z.B. alles in Cheeserburgern angeben)
+- Ähnliches Design z.B. zu WhatsApp
+- Hauptseite 
+
+- Evtl. Profile anlegen
+
+
+PoC:
+- Updatelogik grundprinzip
+- Währung customizable

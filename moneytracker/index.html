@@ -3,14 +3,19 @@
 
 	<head>
 		<title>MoneyTracker PoC</title>
+		<link rel="shortcut icon" href="res/favicon.ico">
 		<meta charset="UTF-8">
 		<link rel="stylesheet" href="styles.css">
 		<script src="main.js"></script>
 		<script src="sw.js"></script>
+		<script src="scripts/notification.js"></script>
 	</head>
 
+	
 	<body>
-		<button onclick="displayNotification()"></button>
+		<div style="text-align:center;">
+			<button class="button" onclick="showNotification()">Don't press me! :(</button>
+		</div>
 		<div class="display" id="numberDisplay"></div>
 	</body>
 
