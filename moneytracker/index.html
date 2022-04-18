@@ -6,18 +6,32 @@
 		<link rel="shortcut icon" href="res/favicon.ico">
 		<meta charset="UTF-8">
 		<link rel="stylesheet" href="styles.css">
-		<script src="main.js"></script>
-		<script src="sw.js"></script>
-		<script src="scripts/notification.js"></script>
+		<link rel="stylesheet" href="styles/modal.css">
 	</head>
-
 	
 	<body>
 		<div style="text-align:center;">
 			<button class="button" onclick="showNotification()">Don't press me! :(</button>
 		</div>
 		<div class="display" id="numberDisplay"></div>
-		<div class="IncomeList" id="incomeList"></div>
+		<div class="cashFlow">
+			<span>Geldflüsse</span>
+			<Button style="border-radius: 50%;" onclick="addListing()">+</Button>
+		</div>
+		<div id="table-scroll">
+			<table class="cashFlowList" id="cashFlowList"></table>
+		</div>
+
+		<div id="modalElement" class="modal">
+			<div class="modal-content">
+			  <span id="close" class="close-btn">&times;</span>
+			  <p>this is the text inside the modal</p>
+			</div>
+		</div>
 	</body>
 
 </html>
+	
+<script src="main.js"></script>
+<script src="sw.js"></script>
+<script src="scripts/notification.js"></script>
