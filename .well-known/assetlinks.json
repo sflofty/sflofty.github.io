@@ -1,5 +1,14 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target" : { "namespace": "android_app", "package_name": "io.github.sflofty.tourganizer",
-               "sha256_cert_fingerprints": ["01:10:A4:78:42:31:23:31:54:38:25:DB:2B:7F:6D:16:7C:20:61:BD:EA:AD:43:AC:7E:25:16:37:72:09:2E:84"] }
-}]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.sflofty.tourganizer",
+      "sha256_cert_fingerprints": [
+        "01:10:A4:78:42:31:23:31:54:38:25:DB:2B:7F:6D:16:7C:20:61:BD:EA:AD:43:AC:7E:25:16:37:72:09:2E:84"
+      ]
+    }
+  }
+]
