@@ -1,4 +1,25 @@
-let boardSize = 3; // default board size
+let timerSeconds;
+let timer;
+
+const startTimer = () => {
+  clearInterval(timer);
+
+  timerSeconds = 0;
+  document.getElementById('timer').innerHTML = '00:00';
+
+  timer = setInterval(() => {
+    console.log(timerSeconds);
+    timerSeconds += 1;
+    document.getElementById('timer').innerHTML =
+      pad(Math.floor(timerSeconds / 60), 2) + ':' + pad(timerSeconds % 60, 2);
+  }, 1000);
+};
+
+function pad(num, size) {
+  num = num.toString();
+  while (num.length < size) num = '0' + num;
+  return num;
+}
 
 function createBoard() {
   boardSize = document.getElementById('board-size').value;
@@ -18,12 +39,14 @@ function createBoard() {
     }
     table.appendChild(tr);
   }
-  
+
   for (let i = 0; i < boardSize; i++) {
     for (let j = 0; j < boardSize; j++) {
       if (Math.random() < 0.5) toggleCellColor(i, j);
     }
   }
+
+  startTimer();
 }
 
 function toggleCellColor(row, col) {
@@ -54,7 +77,25 @@ function toggleCellColor(row, col) {
       cell.style.backgroundColor = newColor;
     }
   }
+
+  if (isDone()) {
+    clearInterval(timer);
+    initConfetti();
+  }
 }
+
+const isDone = () => {
+  const board = document.getElementById('game-board');
+  for (let i = 0; i < board.rows.length; i++) {
+    for (let j = 0; j < board.rows[0].cells.length; j++) {
+      let cell = board.rows[i].cells[j];
+      if (cell.style.backgroundColor == 'white') {
+        return false;
+      }
+    }
+  }
+  return true;
+};
 
 function empire() {
   const table = document.getElementById('game-board');
@@ -78,8 +119,9 @@ function empire() {
     }
     table.appendChild(tr);
   }
-}
 
+  startTimer();
+}
 
 function rebellion() {
   const table = document.getElementById('game-board');
@@ -100,4 +142,10 @@ function rebellion() {
     }
     table.appendChild(tr);
   }
+
+  startTimer();
 }
+
+window.onload = function () {
+  createBoard();
+};
