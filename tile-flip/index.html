@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
 <html>
   <head>
     <title>Tile Flipper</title>
@@ -28,9 +29,12 @@
         </select>
 
         <div>
-          <button onclick="createBoard()">Create Board</button>
-          <button onclick="empire()">Empire Preset</button>
-          <button onclick="rebellion()">Rebellion Preset</button>
+          <button onclick="createBoard()">Start</button>
+        </div>
+
+        <div>
+          <input type="checkbox" id="showSolution" name="showSolution" onclick='updateSolution(this);'>
+          <label for="showSolution">Show solution</label><br>
         </div>
 
         <div id="timer">00:00</div>

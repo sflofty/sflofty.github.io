@@ -4,6 +4,7 @@ body {
   padding-right: 5%;
   text-align: center;
   margin: auto;
+  font-family: 'Roboto'
 }
 
 .row {
@@ -29,13 +30,16 @@ div {
   width: min(90vw, 70vh);
   height: min(90vw, 70vh);
   margin: 0 auto;
+  table-layout: fixed;
 }
 
 td {
   border: 1px solid black;
-  text-align: center;
-  vertical-align: middle;
   cursor: pointer;
+  color: red;
+  width: 10%;
+  height: 10%;
+  font-size: 1.5em;
 }
 
 .confetti {

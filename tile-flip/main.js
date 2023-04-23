@@ -1,6 +1,7 @@
 let timerSeconds;
 let timer;
 let moves;
+let solution;
 
 const startTimer = () => {
   clearInterval(timer);
@@ -23,6 +24,7 @@ function pad(num, size) {
 
 function createBoard() {
   boardSize = document.getElementById('board-size').value;
+  solution = [];
   const table = document.getElementById('game-board');
   table.innerHTML = ''; // clear previous table
 
@@ -42,7 +44,9 @@ function createBoard() {
 
   for (let i = 0; i < boardSize; i++) {
     for (let j = 0; j < boardSize; j++) {
-      if (Math.random() < 0.5) toggleCellColor(i, j);
+      if (Math.random() < 0.5) {
+        toggleCellColor(i, j);
+      }
     }
   }
 
@@ -53,6 +57,14 @@ function createBoard() {
 function toggleCellColor(row, col) {
   moves += 1;
   const board = document.getElementById('game-board');
+
+  let object = solution.find((item) => item.row === row && item.col === col);
+  if (object === undefined) {
+    solution.push({ row, col });
+  } else {
+    solution = solution.filter((item) => item.row !== row || item.col !== col);
+  }
+  updateSolution();
 
   // change adjacent cells color
   const directions = [
@@ -86,6 +98,22 @@ function toggleCellColor(row, col) {
   }
 }
 
+function updateSolution() {
+  const showSolution = document.getElementById('showSolution').checked;
+  const board = document.getElementById('game-board');
+
+  for (let i = 0; i < board.rows.length; i++) {
+    for (let j = 0; j < board.rows[0].cells.length; j++) {
+      board.rows[i].cells[j].innerHTML = '';
+    }
+  }
+  if (showSolution) {
+    solution.forEach((cell) => {
+      board.rows[cell.row].cells[cell.col].innerHTML = '✖';
+    });
+  }
+}
+
 const isDone = () => {
   const board = document.getElementById('game-board');
   for (let i = 0; i < board.rows.length; i++) {
@@ -99,66 +127,16 @@ const isDone = () => {
   return true;
 };
 
-function empire() {
-  const table = document.getElementById('game-board');
-  table.innerHTML = ''; // clear previous table
-
-  const colors = [
-    0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0,
-  ];
-  let position = 0;
-
-  for (let i = 0; i < 5; i++) {
-    const tr = document.createElement('tr');
-    for (let j = 0; j < 5; j++) {
-      const td = document.createElement('td');
-      td.onclick = () => {
-        toggleCellColor(i, j);
-      };
-      td.style.backgroundColor = colors[position] == 1 ? 'black' : 'white';
-      position += 1;
-      tr.appendChild(td);
-    }
-    table.appendChild(tr);
-  }
-
-  startTimer();
-}
-
-function rebellion() {
-  const table = document.getElementById('game-board');
-  table.innerHTML = ''; // clear previous table
-
-  let black = true;
-
-  for (let i = 0; i < 5; i++) {
-    const tr = document.createElement('tr');
-    for (let j = 0; j < 5; j++) {
-      const td = document.createElement('td');
-      td.onclick = () => {
-        toggleCellColor(i, j);
-      };
-      td.style.backgroundColor = black ? 'black' : 'white';
-      black = !black;
-      tr.appendChild(td);
-    }
-    table.appendChild(tr);
-  }
-
-  startTimer();
-}
-
 window.onload = function () {
   createBoard();
 };
-
 
 //
 // CONFETTI
 //
 
-canvas = document.getElementById("canvas");
-ctx = canvas.getContext("2d");
+canvas = document.getElementById('canvas');
+ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 cx = ctx.canvas.width / 2;
@@ -170,15 +148,15 @@ const gravity = 0.5;
 const terminalVelocity = 5;
 const drag = 0.075;
 const colors = [
-{ front: 'red', back: 'darkred' },
-{ front: 'green', back: 'darkgreen' },
-{ front: 'blue', back: 'darkblue' },
-{ front: 'yellow', back: 'darkyellow' },
-{ front: 'orange', back: 'darkorange' },
-{ front: 'pink', back: 'darkpink' },
-{ front: 'purple', back: 'darkpurple' },
-{ front: 'turquoise', back: 'darkturquoise' }];
-
+  { front: 'red', back: 'darkred' },
+  { front: 'green', back: 'darkgreen' },
+  { front: 'blue', back: 'darkblue' },
+  { front: 'yellow', back: 'darkyellow' },
+  { front: 'orange', back: 'darkorange' },
+  { front: 'pink', back: 'darkpink' },
+  { front: 'purple', back: 'darkpurple' },
+  { front: 'turquoise', back: 'darkturquoise' },
+];
 
 //-----------Functions--------------
 resizeCanvas = () => {
@@ -196,20 +174,25 @@ initConfetti = () => {
       color: colors[Math.floor(randomRange(0, colors.length))],
       dimensions: {
         x: randomRange(10, 20),
-        y: randomRange(10, 30) },
+        y: randomRange(10, 30),
+      },
 
       position: {
         x: randomRange(0, canvas.width),
-        y: canvas.height - 1 },
+        y: canvas.height - 1,
+      },
 
       rotation: randomRange(0, 2 * Math.PI),
       scale: {
         x: 1,
-        y: 1 },
+        y: 1,
+      },
 
       velocity: {
         x: randomRange(-25, 25),
-        y: randomRange(0, -50) } });
+        y: randomRange(0, -50),
+      },
+    });
   }
 };
 
@@ -227,7 +210,10 @@ render = () => {
 
     // Apply forces to velocity
     confetto.velocity.x -= confetto.velocity.x * drag;
-    confetto.velocity.y = Math.min(confetto.velocity.y + gravity, terminalVelocity);
+    confetto.velocity.y = Math.min(
+      confetto.velocity.y + gravity,
+      terminalVelocity
+    );
     confetto.velocity.x += Math.random() > 0.5 ? Math.random() : -Math.random();
 
     // Set position
@@ -243,7 +229,8 @@ render = () => {
 
     // Spin confetto by scaling y
     confetto.scale.y = Math.cos(confetto.position.y * 0.1);
-    ctx.fillStyle = confetto.scale.y > 0 ? confetto.color.front : confetto.color.back;
+    ctx.fillStyle =
+      confetto.scale.y > 0 ? confetto.color.front : confetto.color.back;
 
     // Draw confetti
     ctx.fillRect(-width / 2, -height / 2, width, height);
