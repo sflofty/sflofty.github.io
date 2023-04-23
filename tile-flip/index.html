@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Color Change Game</title>
+    <style>
+      table {
+        border-collapse: collapse;
+        margin: 50px auto;
+      }
+
+      td {
+        width: 60px;
+        height: 60px;
+        border: 1px solid black;
+        text-align: center;
+        vertical-align: middle;
+        cursor: pointer;
+        transition: transform 0.3s;
+      }
+
+      .front {
+        background-color: white;
+      }
+
+      .back {
+        background-color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <label for="board-size">Select Board Size:</label>
+    <select id="board-size">
+      <option value="3">3x3</option>
+      <option value="4">4x4</option>
+      <option value="5">5x5</option>
+      <option value="6">6x6</option>
+    </select>
+    <button onclick="createBoard()">Create Board</button>
+    <button onclick="empire()">Empire Preset</button>
+    <button onclick="rebellion()">Empire Preset</button>
+    <table id="game-board"></table>
+
+    <script src="main.js"></script>
+  </body>
+</html>
+
+
