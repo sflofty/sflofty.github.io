@@ -1,39 +1,37 @@
 <!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <html>
   <head>
-    <title>Color Change Game</title>
+    <title>Tile Flipper</title>
     <style>
+      body {
+        margin: 0 auto;
+        padding: 5%;
+      }
+
       table {
-        border-collapse: collapse;
-        margin: 50px auto;
+        width: min(90vw, 70vh);
+        height: min(90vw, 70vh);
       }
 
       td {
-        width: 60px;
-        height: 60px;
         border: 1px solid black;
         text-align: center;
         vertical-align: middle;
         cursor: pointer;
-        transition: transform 0.3s;
-      }
-
-      .front {
-        background-color: white;
-      }
-
-      .back {
-        background-color: black;
       }
     </style>
   </head>
   <body>
+    <h2>Make all tiles black!</h1>
     <label for="board-size">Select Board Size:</label>
     <select id="board-size">
+      <option value="2">2x2</option>
       <option value="3">3x3</option>
       <option value="4">4x4</option>
       <option value="5">5x5</option>
       <option value="6">6x6</option>
+      <option value="7">7x7</option>
     </select>
     <button onclick="createBoard()">Create Board</button>
     <button onclick="empire()">Empire Preset</button>

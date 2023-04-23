@@ -13,10 +13,16 @@ function createBoard() {
       td.onclick = () => {
         toggleCellColor(i, j);
       };
-      td.style.backgroundColor = Math.random() < 0.5 ? 'black' : 'white';
+      td.style.backgroundColor = 'black';
       tr.appendChild(td);
     }
     table.appendChild(tr);
+  }
+  
+  for (let i = 0; i < boardSize; i++) {
+    for (let j = 0; j < boardSize; j++) {
+      if (Math.random() < 0.5) toggleCellColor(i, j);
+    }
   }
 }
 
@@ -44,8 +50,6 @@ function toggleCellColor(row, col) {
       newCol < board.rows[0].cells.length
     ) {
       let cell = board.rows[newRow].cells[newCol];
-      console.log(cell);
-      console.log(cell.style.backgroundColor);
       let newColor = cell.style.backgroundColor == 'white' ? 'black' : 'white';
       cell.style.backgroundColor = newColor;
     }
@@ -81,7 +85,7 @@ function rebellion() {
   const table = document.getElementById('game-board');
   table.innerHTML = ''; // clear previous table
 
-  let black = false;
+  let black = true;
 
   for (let i = 0; i < 5; i++) {
     const tr = document.createElement('tr');
