@@ -53,7 +53,6 @@ function toggleCellColor(row, col) {
 }
 
 function empire() {
-  console.log("empire")
   const table = document.getElementById('game-board');
   table.innerHTML = ''; // clear previous table
 
@@ -79,11 +78,10 @@ function empire() {
 
 
 function rebellion() {
-  console.log("empire")
   const table = document.getElementById('game-board');
   table.innerHTML = ''; // clear previous table
 
-  let black = true;
+  let black = false;
 
   for (let i = 0; i < 5; i++) {
     const tr = document.createElement('tr');
