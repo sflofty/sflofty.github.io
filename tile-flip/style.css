@@ -52,7 +52,17 @@ td {
   position: fixed;
 }
 
-#timer {
+#timerTotal {
   font-size: 4em;
+  font-family: monospace;
+}
+
+#average {
+  font-size: 3em;
+  font-family: monospace;
+}
+
+#timer {
+  font-size: 3em;
   font-family: monospace;
 }

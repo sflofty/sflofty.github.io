@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <html>
   <head>
     <title>Tile Flipper</title>
@@ -29,16 +29,24 @@
         </select>
 
         <div>
-          <button onclick="createBoard()">Start</button>
+          <button onclick="startRound()">Start</button>
         </div>
 
         <div>
-          <input type="checkbox" id="showSolution" name="showSolution" onclick='updateSolution(this);'>
-          <label for="showSolution">Show solution</label><br>
+          <input
+            type="checkbox"
+            id="showSolution"
+            name="showSolution"
+            onclick="updateSolution(this);"
+          />
+          <label for="showSolution">Show solution</label><br />
         </div>
 
-        <div id="timer">00:00</div>
-
+        <div>
+          <span id="timerTotal">00:00</span>
+        </div>
+        <div>average: <span id="average">0</span></div>
+        <span id="timer">00:00</span>
       </div>
       <div class="column">
         <table id="game-board"></table>

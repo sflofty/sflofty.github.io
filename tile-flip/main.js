@@ -1,5 +1,10 @@
 let timerSeconds;
 let timer;
+
+let timerTotalSeconds;
+let timerTotal;
+let finishes;
+
 let moves;
 let solution;
 
@@ -16,10 +21,32 @@ const startTimer = () => {
   }, 1000);
 };
 
+const startTimerTotal = () => {
+  clearInterval(timerTotal);
+
+  timerTotalSeconds = 0;
+  document.getElementById('timerTotal').innerHTML = '00:00';
+
+  timerTotal = setInterval(() => {
+    timerTotalSeconds += 1;
+    document.getElementById('timerTotal').innerHTML =
+      pad(Math.floor(timerTotalSeconds / 60), 2) +
+      ':' +
+      pad(timerTotalSeconds % 60, 2);
+  }, 1000);
+};
+
 function pad(num, size) {
   num = num.toString();
   while (num.length < size) num = '0' + num;
   return num;
+}
+
+function startRound() {
+  finishes = 0;
+  createBoard();
+  startTimerTotal();
+  document.getElementById('average').innerHTML = '00:00' + '(' + finishes + ')';
 }
 
 function createBoard() {
@@ -95,6 +122,17 @@ function toggleCellColor(row, col) {
   if (isDone()) {
     clearInterval(timer);
     initConfetti();
+    createBoard();
+    finishes += 1;
+
+    average = finishes == 0 ? 0 : timerTotalSeconds / finishes;
+    document.getElementById('average').innerHTML =
+      pad(Math.floor(average / 60), 2) +
+      ':' +
+      pad(Math.round(average % 60), 2) +
+      '(' +
+      finishes +
+      ')';
   }
 }
 
